@@ -101,7 +101,7 @@ description: >-
 执行规则：
 1. 在开始 Step 5 前，先列出本次功能涉及的所有模型清单（含 model_name、Java 类名、ER 关系）。
 2. 按依赖顺序对每个模型完整执行 Step 5（Java 类）→ Step 6（视图）→ Step 7（菜单/数据），不要全部 Java 写完再统一写视图。
-3. 跨模型自定义服务在所有模型 Java 类完成后再补充：可挂在主模型上，但需明确事务边界（`@Transactional`）和涉及的所有模型。
+3. 跨模型自定义服务在所有模型 Java 类完成后再补充：可挂在主模型上，但需明确事务边界和涉及的所有模型。事务遵循 `references/core/method-service.md` 事务控制章节与 `references/core/platform-standards.md` 事务原则——默认使用 IIDP 请求级事务，业务流程失败抛 `ModelException` 自动回滚；确需分段提交才用 `Meta` 手动 `flush/commit`。
 4. 每完成一个模型，在 `app.json` 的 `view` 和 `data` 数组中**同步**登记该模型的视图和菜单文件路径，不要等到最后再批量登记（容易遗漏）。
 
 ---

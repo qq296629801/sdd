@@ -95,6 +95,17 @@ description: >-
 参见 `references/core/pom-structure.md` → "app.json 配置"章节。
 
 ### Step 5：编写 Java 模型类
+
+**多模型业务时，必须按 ER 依赖顺序对 Step 5～7 进行循环展开：被引用的模型先写。**
+
+执行规则：
+1. 在开始 Step 5 前，先列出本次功能涉及的所有模型清单（含 model_name、Java 类名、ER 关系）。
+2. 按依赖顺序对每个模型完整执行 Step 5（Java 类）→ Step 6（视图）→ Step 7（菜单/数据），不要全部 Java 写完再统一写视图。
+3. 跨模型自定义服务在所有模型 Java 类完成后再补充：可挂在主模型上，但需明确事务边界（`@Transactional`）和涉及的所有模型。
+4. 每完成一个模型，在 `app.json` 的 `view` 和 `data` 数组中**同步**登记该模型的视图和菜单文件路径，不要等到最后再批量登记（容易遗漏）。
+
+---
+
 路径：`src/main/java/com/sie/iidp/{appPkg}/{moduleName}/model/{ModelName}.java`
 
 读取 `references/core/model.md` 获取注解详细参数；读取 `references/core/platform-standards.md` 约束命名、异常、事务、SQL、安全和代码规约。

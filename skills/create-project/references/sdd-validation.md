@@ -17,21 +17,33 @@
 
 - [ ] `sie-iidp-demo-apps/pom.xml` 登记新增模块
 - [ ] `app.json` 位于 `resolved` 包路径
-- [ ] `app.json.view` 登记视图
+- [ ] `app.json.view` 登记**所有模型**的视图文件路径
 - [ ] `app.json.data` 登记菜单、字典、种子、附件
 - [ ] `apps/apps.json` 登记新增 jar
+- [ ] 多模型业务：模型清单中的每个 model 都对应有 Java 类文件、视图文件、菜单入口或子表挂载点
 
-### 命名一致
+### 命名一致（每个模型独立检查）
 
-- [ ] `@Model(name)` 与视图 `model`、菜单 `model` 一致
-- [ ] 视图 key 和菜单 key 带业务前缀
-- [ ] 自定义按钮 `service` 对应 Java 服务
+对模型清单中的**每一个模型**重复以下检查：
+
+- [ ] 模型 [N]：`@Model(name)` 与视图 JSON 的 `model`、菜单的 `model` 完全一致
+- [ ] 模型 [N]：视图 key 和菜单 key 带业务前缀（如 `{appPkg}_`）
+- [ ] 模型 [N]：自定义按钮 `service` 对应该模型的 Java `@MethodService`
+- [ ] ER 关系：`@ManyToOne`/`@OneToMany` 指向的目标模型已存在（本应用内或跨应用 `strong` 依赖）
 
 ### 服务与权限
 
-- [ ] 写服务校验状态、权限、作用域和必填参数
-- [ ] 查询服务支持 Filter、分页、排序和字段选择
-- [ ] 菜单、按钮、服务权限码稳定
+- [ ] 每个模型的写服务都校验：状态、权限、作用域、必填参数
+- [ ] 每个模型的查询服务都支持：Filter、分页、排序、字段选择
+- [ ] 跨模型服务：标注挂载模型、涉及模型、事务边界（`@Transactional`），并对所有涉及模型的状态做联合校验
+- [ ] 菜单、按钮、服务权限码与权限码总览表一致
+- [ ] 权限码在三处对齐：后端服务 `auth` + 视图按钮 `auth` + 权限码总览表
+
+### 数据兼容性（存量项目接入时）
+
+- [ ] 模型字段类型与已有数据库表兼容；增加非空字段时已规划默认值或迁移脚本
+- [ ] 状态枚举（如 `DRAFT/RELEASED/...`）与已有数据兼容；新增枚举值不破坏旧数据
+- [ ] 唯一索引、外键约束变更已评估锁表风险
 
 ### 后端命令
 
@@ -55,9 +67,25 @@ find iidp-backend-demo-ai -name '*.json' -print0 | xargs -0 -n1 node -e 'JSON.pa
 ### 扩展语义
 
 - [ ] 实现分支判断正确，没有为标准页硬写前端代码
-- [ ] 目标节点 id 来源明确
+- [ ] 目标节点 id 来源明确（用户提供 / 标准模板规则库推导 / 浏览器控制台验证），不得按文案猜测
 - [ ] hook 路径、扩展类型、数据源名、commands 名称清晰
 - [ ] 未修改 `node_modules`、`dist`、`distApp`、`distTmp`、`umdComps`、`build`
+- [ ] **完全替换标准模板页面时使用 `replace`，不得使用 `type: 'page'`**（`type: 'page'` 仅用于新增独立路由页面）
+
+### Hook 与扩展规则
+
+- [ ] 所有 hook 方法**必须 return 数据**（业务逻辑在 return 之前完成）
+- [ ] 调用 `vm.super['hook.path']` 时必须 return 其返回值，不丢失平台原逻辑
+- [ ] `before*` hook 返回处理后的 params；`after*` hook 返回原方法或业务数据；`can*` hook 返回 true/false
+- [ ] 刷新表格用 `vm.biz.grid.methods.runRefresh()`，不用 `query()`
+- [ ] 不编造 `vm.biz` 上的方法或属性路径；不确定时标注待确认
+
+### 安全与代码质量
+
+- [ ] 动态内容拼接到 HTML 时通过 `escapeHtml` 转义
+- [ ] API 请求统一走 IIDP 数据源或 `window.Tech.httpMeta`，禁止引入 axios/fetch
+- [ ] 变量声明使用 `const`/`let`，禁用 `var`
+- [ ] Vue 组件注册只在 `apps/<appName>/common/comps.js` 完成；扩展视图 JS 文件禁止 import `.vue`
 
 ### 前端命令
 

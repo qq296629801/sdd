@@ -181,11 +181,28 @@ specs/features/
 ## 后端·登记与收尾
 - [ ] [S] 更新 `apps/apps.json` 登记新 jar
 
-## 前端
-- [ ] [S] 判断各模型页面是否需要前端代码
-- [ ] [S] 如需扩展，确认 `apps/<appName>` 和目标节点 id
-- [ ] [M] 编写 hook 或扩展视图
-- [ ] [M] 如需组件，注册 Vue2 自定义组件
+## 前端·实现分支判断（必先做）
+- [ ] [S] 对每个页面/模型判断实现分支：标准模板 / hook / 扩展视图 / Vue2 组件
+- [ ] [S] 标准模板可完成的页面，明确"前端无需新增代码"，跳过前端段
+- [ ] [S] 需要前端介入的页面，列出目标工程、目标应用 `apps/<appName>`、目标节点 id 和 id 来源
+
+## 前端·工程基础（仅全新前端时执行一次）
+- [ ] [S] 使用 `tech project <projectName>` 创建工程
+- [ ] [M] 使用 `tech app <appName>` 创建扩展应用
+- [ ] [S] 配置 `apps/<appName>/config/app.json`、`effectPaths`
+
+## 前端·页面 1：[页面名]（按页面/模型逐个展开）
+- [ ] [M] 编写扩展视图 `apps/<appName>/views/<business>/<business>.js`
+- [ ] [S] 在 `apps/<appName>/views/index.js` 汇总导出
+- [ ] [M] 如需 hook：写在同一个 business 文件中，使用 `selector` + `type: "merge"` + `hook` 结构
+- [ ] [M] 如需自定义 Vue 组件：放 `apps/<appName>/common/comps.js` 注册（扩展视图 JS 禁止 import `.vue`）
+- [ ] [S] 如需公共组件复用：放 `apps/component/`
+
+<!-- 有更多页面时，复制上方页面块，按业务顺序追加 -->
+
+## 前端·收尾
+- [ ] [S] 运行 `npm run lint` 或说明无法运行原因
+- [ ] [S] 浏览器控制台用 `tech_app.printObj(节点id)` / `Tech.$page(id)` 验证节点
 
 ## 验证
 - [ ] [S] 运行空白和 JSON 校验（所有模型视图文件）
@@ -196,11 +213,24 @@ specs/features/
 
 ## Step 4：Implement
 
+**实现阶段必须经由对应子 skill，不要直接基于 create-project 的轻量任务清单写代码。**
+
+| 任务类型 | 必须经由 |
+|---|---|
+| 后端工程、模型、视图、菜单、服务、数据 | `skills/backend/SKILL.md` 的 Step 1～10 流程 |
+| 前端规格 → 代码（含工程初始化） | `skills/frontend/SKILL.md` 路由 → `iidp-frontend-spec-code`（自动编排 init + extension-dev） |
+| 前端扩展开发（已有工程内） | `skills/frontend/SKILL.md` 路由 → `iidp-frontend-extension-dev` |
+| 框架/组件/扩展协议查阅 | `skills/frontend/SKILL.md` 路由 → `iidp-frontend-dev-manual` |
+| 节点 id 推导 | `skills/frontend/SKILL.md` 路由 → `iidp-frontend-standard-ids` |
+
+执行规则：
+
 - 一次只处理一个任务。
 - 修改前读取相邻文件，沿用当前工程风格。
 - 不顺手重构无关模块。
 - 不回退用户已有变更。
-- 对缺失事实写“待确认”，不补成假事实。
+- 对缺失事实写"待确认"，不补成假事实。
+- **每个任务完成后回到 `tasks.md` 勾选状态，再启动下一个任务**；不要批量声明完成。
 
 ## Step 5：Validate
 

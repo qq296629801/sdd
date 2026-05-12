@@ -79,8 +79,11 @@ DRAFT ──release──> RELEASED ──startWork──> IN_PROGRESS ──com
 
 #### 5. 状态机后端实现规则
 
-- 每个状态变更服务必须在 `@MethodService` 内做**双重校验**：当前状态 + 用户权限 + 必填参数
-- 状态字段使用 `@Property @Selection(...)`，枚举值与本契约表完全一致
+- 每个状态变更服务必须在 `@MethodService` 内按 IIDP 异常规范分层校验（见 `skills/backend/references/core/platform-standards.md` 异常与事务）：
+  - 字段级必填/长度/唯一：在模型层用 `@Validate` 表达
+  - 参数缺失或格式错误：抛 `ValidationException`（不触发回滚）
+  - 当前状态不允许该流转、权限不足、业务流程失败：抛 `ModelException`（触发请求级事务回滚）
+- 状态字段使用 `@Property @Selection(values = {...})`，枚举值与本契约表完全一致
 - 状态机服务必须在同一个 `@MethodService` 内完成状态变更与副作用（如生成审批记录），依赖 IIDP 请求级事务统一提交；失败抛 `ModelException` 触发自动回滚。需要分段提交才使用 `Meta` 手动 `flush/commit`（见 `skills/backend/references/core/method-service.md` 事务控制章节）
 - 前端按钮显隐通过 `bind_display`/`auth` 配合后端服务校验，**前端控制不替代后端二次校验**
 

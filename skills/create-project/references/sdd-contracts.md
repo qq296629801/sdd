@@ -24,7 +24,7 @@
 
 | service | 挂载模型 | 涉及模型 | 事务边界 | 触发入口 | 节点 id | 权限码 |
 |---|---|---|---|---|---|---|
-| `[serviceName]` | `[主模型]` | `[模型1], [模型2]` | `@Transactional` | grid 按钮/form 内 | `[id]` | `[auth]` |
+| `[serviceName]` | `[主模型]` | `[模型1], [模型2]` | IIDP 请求级事务（抛 `ModelException` 自动回滚） | grid 按钮/form 内 | `[id]` | `[auth]` |
 
 ### 权限码总览（单一事实来源）
 
@@ -81,7 +81,7 @@ DRAFT ──release──> RELEASED ──startWork──> IN_PROGRESS ──com
 
 - 每个状态变更服务必须在 `@MethodService` 内做**双重校验**：当前状态 + 用户权限 + 必填参数
 - 状态字段使用 `@Property @Selection(...)`，枚举值与本契约表完全一致
-- 状态机服务必须 `@Transactional`，避免状态变更与副作用（如生成审批记录）出现部分提交
+- 状态机服务必须在同一个 `@MethodService` 内完成状态变更与副作用（如生成审批记录），依赖 IIDP 请求级事务统一提交；失败抛 `ModelException` 触发自动回滚。需要分段提交才使用 `Meta` 手动 `flush/commit`（见 `skills/backend/references/core/method-service.md` 事务控制章节）
 - 前端按钮显隐通过 `bind_display`/`auth` 配合后端服务校验，**前端控制不替代后端二次校验**
 
 ---

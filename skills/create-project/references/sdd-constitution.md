@@ -203,7 +203,7 @@ specs/
 
 | 服务 | 挂载模型 | 涉及模型 | 触发入口 | 事务边界 | 权限码 |
 |---|---|---|---|---|---|
-| `[serviceName]` | `[主模型]` | `[模型1], [模型2]` | grid 按钮/form 内 | `@Transactional` | `[auth]` |
+| `[serviceName]` | `[主模型]` | `[模型1], [模型2]` | grid 按钮/form 内 | IIDP 请求级事务（抛 `ModelException` 自动回滚） | `[auth]` |
 
 ## 权限码总览
 

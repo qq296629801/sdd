@@ -175,7 +175,7 @@ specs/features/
 <!-- 有更多模型时，复制上方模型块，按依赖顺序追加 -->
 
 ## 后端·跨模型自定义服务（有复杂流程时必写）
-- [ ] [M] 编写 `[serviceName]`：校验状态、权限、作用域；操作涉及模型；`@Transactional`
+- [ ] [M] 编写 `[serviceName]`：校验状态、权限、作用域；操作涉及模型；事务采用 IIDP 请求级事务（失败抛 `ModelException` 自动回滚），如需分段提交则用 `Meta.flush/commit`
 - [ ] [M] 编写 `[serviceName2]`（如有）
 
 ## 后端·登记与收尾

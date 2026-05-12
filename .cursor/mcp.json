@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "iidp-mcp": {
+      "url": "http://127.0.0.1:8000/mcp"
+    },
+    "jenkins-py": {
+      "command": "/Library/Frameworks/Python.framework/Versions/3.13/bin/mcp-jenkins",
+      "args": [],
+      "env": {
+        "jenkins_url": "http://192.168.174.64:30914/",
+        "jenkins_username": "",
+        "jenkins_password": ""
+      }
+    },
+    "gitlab": {
+      "command": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+      "args": ["/Users/mjy/dd/gitlab-mcp/gitlab_cursor_stdio.py"],
+      "cwd": "/Users/mjy/dd/gitlab-mcp"
+    }
+  }
+}

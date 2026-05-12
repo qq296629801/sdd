@@ -1,0 +1,164 @@
+# IIDP 项目宪法
+
+## 核心定位
+
+SDD 在当前项目中不是“先选一个 Web 框架再生成代码”，而是先把业务需求转换成 IIDP 平台能执行的结构化契约：
+
+- 后端落点：Maven 模块、`app.json`、Java `@Model`、`@Property`、`@Validate`、`@MethodService`、`views/*.json`、`data/*.json`、`menus.json`、`apps/apps.json`。
+- 前端落点：标准模板、在线视图、后端视图配置、扩展应用、hook、扩展视图、数据源、属性绑定、事件绑定、commands、自定义 Vue2 组件。
+- 集成落点：JSON-RPC `service` 调用、平台 Filter、视图按钮 `service/args/auth/actionAfter`、菜单 `view`、权限码、多租户和多语言规则。
+
+## 三条约束
+
+1. **IIDP 规范优先**：外部通用规范与 IIDP 平台写法冲突时，以当前工程可运行的 IIDP 写法为准。
+2. **契约先行**：模型名、视图 key、菜单 key、服务名、权限码、数据源名、节点 id 等必须先写清楚。
+3. **不编造平台事实**：未知接口、模型、节点 id、菜单 id、枚举、权限码必须写为“待确认”。
+
+## 文件结构
+
+```text
+specs/
+├── mission.md
+├── iidp-stack.md
+├── ui-constitution.md
+├── roadmap.md
+├── integration-map.md
+└── decisions.md
+```
+
+## mission.md 模板
+
+```markdown
+# 项目使命
+
+## 项目名称
+[业务系统或 App 名称]
+
+## 使命陈述
+[为哪个角色提供什么能力，解决什么业务问题]
+
+## 目标用户
+- 主要用户：
+- 次要用户：
+
+## 核心业务价值
+- [价值 1]
+- [价值 2]
+
+## v1.0 成功标准
+- [ ] [可验证的业务目标]
+- [ ] [可验证的运行目标]
+
+## 明确不在范围内
+- [本阶段不做的能力]
+```
+
+## iidp-stack.md 模板
+
+```markdown
+# IIDP 技术栈与约束
+
+## 后端工程
+- 目标工程：`iidp-backend-demo-ai`
+- Java：主工程 Java 8；特殊模块按当前 POM 约束执行
+- 构建：Maven，使用项目内 `settings.xml`
+- 平台：IIDP 元模型、Snest SDK/Engine、Spring Boot 启动模块
+- 运行依赖：MySQL、Redis、MinIO；按需求使用 XXL-Job
+- 接口协议：JSON-RPC `POST /root/api/master`
+
+## 后端生成约束
+- 新增业务 App 默认放在 `sie-iidp-demo-apps/sie-iidp-demo-{appName}`
+- `app.json` 必须位于 `resolved` 对应包路径
+- 普通业务模型必须有 `grid/search/form` 三类视图
+- 视图、菜单、数据、文件种子必须登记到 `app.json`
+- 新增 jar 必须登记到 `apps/apps.json` 的 `apps.SDK`
+- 不新增无明确业务必要的第三方依赖
+
+## 前端工程
+- 创建工程：只能使用 `tech project <projectName>`
+- 创建扩展应用：只能在工程根目录使用 `tech app <appName>`
+- 传统管理后台：优先标准模板和在线视图，通常不新增前端代码
+- 前端扩展顺序：hook → 扩展视图 → 自定义 Vue2 组件
+- Element UI 已全局引入，自定义组件中不要单独引入
+
+## 前端生成约束
+- 业务扩展默认只改 `apps/<appName>/views`、`common`、`config`、`apps/component`
+- 不读取或修改 `node_modules`、`dist`、`distApp`、`distTmp`、`umdComps`、`build`
+- 目标节点 id 不得猜测；优先用户提供，其次标准模板规则库，最后询问
+- `effectPaths.includeRegExp` 不带 `/iidp/` 前缀
+```
+
+## ui-constitution.md 模板
+
+```markdown
+# IIDP UI 宪法
+
+## 设计来源
+- 原型来源：支持 MCP 的原型/设计/产品工具服务/截图/导出文档/文字描述/待确认
+- MCP 服务名称（不限产品）：
+- MCP 资源 URI：
+- 页面或 Frame：
+- 原型版本：
+
+## 标准模板视觉约束
+- 传统管理后台优先使用 IIDP 标准模板和后端在线视图，不为常规搜索、表格、表单、树、上下表另起自定义页面。
+- 颜色、字号、间距、按钮类型、表单标签宽度优先继承平台主题和 Element UI，不硬编码大面积自定义视觉系统。
+- 自定义样式只作用于业务扩展节点，使用稳定节点 id、`className`、`style` 或 `css`，不得污染平台全局样式。
+- 按钮文案、空态、错误提示、权限提示使用业务可理解语言；多语言项目必须登记语言资源或标记待确认。
+
+## IIDP 组件使用规则
+- 节点树根结构遵守 `app > page > container > 具体组件`。
+- 每个扩展新增节点必须有 `type`，稳定业务节点建议有唯一 `id`，子节点放在 `items`。
+- 布局承载优先使用 `container`、`row`、`form-container`；表格使用 `table`，表单使用 `form`，按钮使用 `button`。
+- 显隐优先使用 `display` 或 `bind_display`；交互事件优先使用真实存在的 `bind_on_事件名`。
+- 组件属性不确定时先查 `skills/frontend/references/iidp-frontend-extension-dev/COMPONENT_RULES.md`，不要猜属性名。
+
+## 响应式、容器与 iframe 约束
+- 标准后台页面以平台容器自适应为主，避免用固定宽高破坏主框架、Tab、弹窗或抽屉布局。
+- `row` 使用 24 栅格和 `span` 控制列宽；复杂表单嵌套可用 `form-container` 或 `row` 包裹。
+- 表格高度、弹窗内容和详情区要说明滚动归属，避免页面、弹窗、表格三层同时滚动。
+- 涉及 iframe、Tab 独立渲染或性能模式时，先查前端开发手册对应章节，规格中标记是否启用 `TABIFRAME`。
+
+## 可访问性与可用性
+- 表单字段必须有清晰 label、必填标识、校验信息和错误恢复方式。
+- 按钮禁用、权限隐藏、加载中、空数据、异常态必须有文字反馈，不只依赖颜色。
+- 弹窗/抽屉必须说明打开入口、关闭方式、保存成功后的刷新策略和失败后的停留策略。
+- 批量操作、删除、状态变更等危险操作必须有确认或后端二次校验。
+
+## 原型到 IIDP 的落地规则
+- 原型描述只说明用户看到什么和怎么操作，不自动推导为自定义 Vue2 组件。
+- 原型元素先映射到后端视图和标准模板；标准能力不足时再写 hook、扩展视图或自定义组件。
+- 原型中的复杂动画、营销式布局、非后台交互如与当前 IIDP 管理后台不匹配，必须标记为需产品确认。
+```
+
+## roadmap.md 模板
+
+```markdown
+# 项目路线图
+
+## Phase 1：[阶段名]
+目标：[业务目标]
+
+功能列表：
+- [ ] [模型/页面/流程 1]
+- [ ] [模型/页面/流程 2]
+
+验收标准：
+- [ ] 后端新增模型、视图、菜单、服务可以被 IIDP 引擎加载
+- [ ] 前端标准页或扩展应用可以完成核心流程
+
+## 技术债
+| 问题 | 影响 | 优先级 | 计划处理阶段 |
+|---|---|---|---|
+| [问题] | [影响] | 高/中/低 | Phase X |
+```
+
+## integration-map.md 模板
+
+```markdown
+# 前后端契约总览
+
+| 页面/能力 | 后端模型 | 视图 key | 菜单 key | 服务 | 权限码 | 前端实现方式 | 待确认 |
+|---|---|---|---|---|---|---|---|
+| [页面] | `[model_name]` | `[grid/search/form]` | `[menu_key]` | `[service]` | `[auth]` | 标准模板/在线视图/hook/扩展视图/Vue2 组件 | [事项] |
+```

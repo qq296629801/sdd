@@ -93,6 +93,18 @@ specs/
 ```markdown
 # IIDP UI 宪法
 
+## 适用范围
+
+- 项目类型：单 App / 多 App
+- 涉及的 App 列表（多 App 项目必填）：
+  | App | appName | 业务定位 | 是否独立扩展工程 |
+  |---|---|---|---|
+  | App 1 | `[demo-xxx]` | [说明] | 是/否，复用 `[appName2]` |
+  | App 2 | `[demo-yyy]` | [说明] | 是/否 |
+- 跨 App 共享部分：如全局主题、公共组件、统一菜单结构、共用语言包
+
+下方所有视觉约束、组件规则默认适用全部 App；个别 App 有差异时在对应章节末尾以"App 级例外：[appName]"标注。
+
 ## 设计来源
 - 原型来源：支持 MCP 的原型/设计/产品工具服务/截图/导出文档/文字描述/待确认
 - MCP 服务名称（不限产品）：
@@ -139,19 +151,27 @@ specs/
 ## Phase 1：[阶段名]
 目标：[业务目标]
 
-功能列表：
-- [ ] [模型/页面/流程 1]
-- [ ] [模型/页面/流程 2]
+功能列表（每项链接到 `specs/features/<feature>/` 下的规格文件）：
+
+| 状态 | 功能 | 规格目录 | 涉及模型/页面 | 负责人 | 完成日期 |
+|---|---|---|---|---|---|
+| ☐ 待开始 / ▶ 进行中 / ✅ 完成 | [功能名 1] | [`specs/features/phase1-[feature1]/`](features/phase1-[feature1]/requirements.md) | `[model]`/[页面] | — | — |
+| ☐ | [功能名 2] | [`specs/features/phase1-[feature2]/`](features/phase1-[feature2]/requirements.md) | `[model]` | — | — |
 
 验收标准：
-- [ ] 后端新增模型、视图、菜单、服务可以被 IIDP 引擎加载
-- [ ] 前端标准页或扩展应用可以完成核心流程
+- [ ] 后端：每个功能的模型、视图、菜单、服务可被 IIDP 引擎加载（参见各 feature 的 `validation.md`）
+- [ ] 前端：标准页或扩展应用可以完成核心流程（参见各 feature 的 `validation.md`）
+- [ ] 集成：跨功能契约一致，权限码总览同步更新
 
 ## 技术债
-| 问题 | 影响 | 优先级 | 计划处理阶段 |
-|---|---|---|---|
-| [问题] | [影响] | 高/中/低 | Phase X |
+| 问题 | 影响 | 优先级 | 计划处理阶段 | 关联 feature |
+|---|---|---|---|---|
+| [问题] | [影响] | 高/中/低 | Phase X | `phase1-[feature]` |
 ```
+
+**约定**：
+- 新建 feature 时同步在本 roadmap 表中追加一行，链接路径与 `specs/features/` 目录一致。
+- feature 完成时把 ☐ 改为 ✅，填完成日期，避免 roadmap 与实际进度脱节。
 
 ## integration-map.md 模板
 

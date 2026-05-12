@@ -17,8 +17,8 @@
 | `sdd-constitution.md` | 核心定位、项目宪法、`mission.md`、`iidp-stack.md`、`ui-constitution.md`、`integration-map.md` | 建项、补项目宪法、补 UI 宪法、定义跨功能约束 |
 | `sdd-workflow.md` | 规格层次、功能迭代闭环、能力识别、计划、任务、验收目录 | 生成 requirements/plan/tasks/validation，或解释 SDD 流程 |
 | `sdd-backend.md` | IIDP 后端规格模板：命名、工程文件、模型、服务、视图、菜单、权限、验收 | 生成或审核后端规格 |
-| `sdd-frontend.md` | IIDP 前端规格模板：产品无关的原型 MCP、UI 原型、节点树、selector、`ds_config`、绑定、事件、commands、hook | 生成或审核前端/UI/原型规格 |
-| `sdd-frontend-interaction.md` | 前端交互设计规格：用户流程、节点层级、状态表、响应式、可访问性、验收标准 | 生成或审核页面级交互规格 |
+| `sdd-frontend.md` | IIDP 前端**技术落地**规格模板：节点树、selector、`ds_config`、绑定、事件、commands、hook；读完后按 `SKILL.md` 前端子 skill 路由规则继续执行 | 已知实现方式，需要输出节点/绑定/事件技术细节时；从需求生成规格时先走 `iidp-frontend-spec-doc` |
+| `sdd-frontend-interaction.md` | 前端交互设计规格：用户流程、节点层级、状态表、响应式、可访问性、验收标准 | 需要页面级交互状态、响应式或可访问性规格时；与 `sdd-frontend.md` 配合使用，不重复输出 |
 | `sdd-contracts.md` | 前后端契约：JSON-RPC、Filter、按钮服务、节点 id、节点属性与事件 | 生成契约表、接口参数、视图按钮或节点扩展契约 |
 | `sdd-validation.md` | 实现顺序、后端/前端验证、偏差处理、失败分类、阶段复盘、CHANGELOG | 验证交付、处理失败、阶段复盘、维护变更记录 |
 | `sdd-brownfield.md` | 存量项目接入：侦察、契约提取、增量规格 | 接入或改造已有 IIDP 项目 |

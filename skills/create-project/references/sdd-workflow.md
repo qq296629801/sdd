@@ -92,6 +92,15 @@ specs/features/
 ## 能力识别
 
 - 业务对象：
+- 模型清单（有多个模型时必填，按依赖顺序排列）：
+  | # | 模型名 | Java 类名 | model_name | 与其他模型的关系 |
+  |---|---|---|---|---|
+  | 1 | [主模型] | `[MainEntity]` | `[app_main]` | 一对多 → [SubEntity] |
+  | 2 | [子模型] | `[SubEntity]` | `[app_sub]` | ManyToOne → [MainEntity] |
+- 跨模型自定义服务（有复杂业务流程时必填）：
+  | 服务名 | 挂载模型 | 涉及模型 | 业务目标 |
+  |---|---|---|---|
+  | `[serviceName]` | `[model]` | `[model1], [model2]` | [说明] |
 - 后端能力域：
 - 前端实现分支：
 - 是否需要新增 App：
@@ -143,29 +152,46 @@ specs/features/
 
 ## Step 3：Tasks
 
+单模型业务使用下方基础模板；**多模型业务必须为每个模型生成独立任务块**，并在末尾补充跨模型服务任务。
+
 ```markdown
 # 任务清单：[功能名称]
 
-## 后端
-- [ ] [S] 确认命名：appName、appPkg、moduleName、model_name、菜单 key
+## 后端·工程基础（只做一次）
+- [ ] [S] 确认所有模型命名：appName、appPkg、moduleName、各 model_name、菜单 key
 - [ ] [M] 新增或修改业务模块 POM
-- [ ] [M] 新增 `app.json` 并登记 view/data
-- [ ] [M] 编写 Java `@Model` 和必要 `@MethodService`
-- [ ] [M] 编写 `views/*.json`
-- [ ] [S] 编写 `data/menus.json` 和种子数据
-- [ ] [S] 更新 `apps/apps.json`
+- [ ] [M] 新增 `app.json` 并预登记所有模型的 view/data 路径
+
+## 后端·模型 1：[ModelName]
+- [ ] [M] 编写 Java `@Model` 和字段（含 ER 关系注解）
+- [ ] [M] 编写 `views/[model_name]_view.json`（grid/search/form）
+- [ ] [S] 编写菜单入口和种子数据
+
+## 后端·模型 2：[ModelName]
+- [ ] [M] 编写 Java `@Model` 和字段（含 ManyToOne 关联父模型）
+- [ ] [M] 编写 `views/[model_name]_view.json`
+- [ ] [S] 编写菜单入口和种子数据
+
+<!-- 有更多模型时，复制上方模型块，按依赖顺序追加 -->
+
+## 后端·跨模型自定义服务（有复杂流程时必写）
+- [ ] [M] 编写 `[serviceName]`：校验状态、权限、作用域；操作涉及模型；`@Transactional`
+- [ ] [M] 编写 `[serviceName2]`（如有）
+
+## 后端·登记与收尾
+- [ ] [S] 更新 `apps/apps.json` 登记新 jar
 
 ## 前端
-- [ ] [S] 判断是否需要前端代码
+- [ ] [S] 判断各模型页面是否需要前端代码
 - [ ] [S] 如需扩展，确认 `apps/<appName>` 和目标节点 id
 - [ ] [M] 编写 hook 或扩展视图
 - [ ] [M] 如需组件，注册 Vue2 自定义组件
 
 ## 验证
-- [ ] [S] 运行空白和 JSON 校验
+- [ ] [S] 运行空白和 JSON 校验（所有模型视图文件）
 - [ ] [M] 运行 Maven 编译或说明无法运行原因
 - [ ] [M] 运行前端 lint/build 或说明无法运行原因
-- [ ] [S] 对照页面流程人工验证
+- [ ] [S] 对照页面流程人工验证（覆盖所有模型的增删改查和跨模型服务）
 ```
 
 ## Step 4：Implement

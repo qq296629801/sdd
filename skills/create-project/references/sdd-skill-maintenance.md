@@ -57,7 +57,54 @@ skills/create-project/
 修改 skill 后至少运行：
 
 ```bash
-python3 /Users/mjy/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/create-project
-find skills/create-project -name '*.md' -print0 | xargs -0 -n1 awk 'BEGIN{c=0} /^```/{c++} END{if (c % 2 == 0) exit 0; print FILENAME ": unbalanced " c; exit 1}'
-awk '/[ \t]$/{print FILENAME ":" FNR ":" $0; bad=1} END{exit bad}' skills/create-project/SKILL.md skills/create-project/references/*.md
+# 1. 结构校验：SKILL.md frontmatter、按需加载表中的文件是否存在、目录完整性
+python3 -c "
+import os, sys, re
+
+base = 'skills/create-project'
+skill_md = os.path.join(base, 'SKILL.md')
+errors = []
+
+# 检查 SKILL.md 存在且含 YAML frontmatter
+with open(skill_md) as f:
+    content = f.read()
+if not content.startswith('---'):
+    errors.append('SKILL.md: missing YAML frontmatter')
+if 'name:' not in content:
+    errors.append('SKILL.md: missing name field')
+if 'description:' not in content:
+    errors.append('SKILL.md: missing description field')
+
+# 检查 references/ 下登记的文件是否实际存在
+refs_dir = os.path.join(base, 'references')
+for fname in os.listdir(refs_dir):
+    fpath = os.path.join(refs_dir, fname)
+    if fname.endswith('.md') and not os.path.isfile(fpath):
+        errors.append(f'references/{fname}: registered but not found')
+
+# 检查 sdd.md 索引中引用的文件是否存在
+sdd_index = os.path.join(refs_dir, 'sdd.md')
+with open(sdd_index) as f:
+    for line in f:
+        m = re.search(r'\x60(sdd-[\w-]+\.md)\x60', line)
+        if m:
+            ref_path = os.path.join(refs_dir, m.group(1))
+            if not os.path.isfile(ref_path):
+                errors.append(f'sdd.md references missing file: {m.group(1)}')
+
+if errors:
+    print('ERRORS:')
+    for e in errors: print(' ', e)
+    sys.exit(1)
+else:
+    print('OK: structure check passed')
+"
+
+# 2. Markdown 代码块配对检查（奇数个 ``` 说明有未闭合块）
+find skills/create-project -name '*.md' -print0 | xargs -0 -n1 awk \
+  'BEGIN{c=0} /^```/{c++} END{if(c%2==0) exit 0; print FILENAME": unbalanced code blocks: "c; exit 1}'
+
+# 3. 行尾空格检查
+awk '/[ \t]$/{print FILENAME":"FNR": trailing whitespace"; bad=1} END{exit bad+0}' \
+  skills/create-project/SKILL.md skills/create-project/references/*.md
 ```

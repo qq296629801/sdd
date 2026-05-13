@@ -52,6 +52,8 @@ agents/
 │   ├── features/
 │   │   └── phase1-[feature]/
 │   │       ├── requirements.md
+│   │       ├── backend-spec.md       # 后端技术落地规格（模型、服务、视图、菜单、权限细节）
+│   │       ├── frontend-spec.md      # 前端技术落地规格（仅需要前端代码时生成）
 │   │       ├── plan.md
 │   │       ├── tasks.md
 │   │       └── validation.md

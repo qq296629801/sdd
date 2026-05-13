@@ -2,6 +2,8 @@
 
 生成后端规格时，先读取 `skills/backend/SKILL.md`，再按能力域读取对应专题。本文只提供 `create-project` 侧的 SDD 输出结构，不替代 backend skill 的硬性规则。
 
+**输出文件路径**：`specs/features/<phase>-<feature>/backend-spec.md`
+
 ```markdown
 # [功能名称] IIDP 后端规格
 
@@ -69,14 +71,26 @@
 - `view`：`{model_name}_grid,{model_name}_search,{model_name}_form`
 - `parent_id`：
 
+操作栏按钮（从 §4 服务设计按钮权限列提取）：
+
+| 按钮 | service | auth | 位置 |
+|---|---|---|---|
+| 新增 | `create` | `{model_name}:create` | tbar（工具栏） |
+| 编辑 | `update` | `{model_name}:update` | 行操作（buttons） |
+| 删除 | `delete` | `{model_name}:delete` | 行操作（buttons） |
+| [自定义操作] | `[serviceName]` | `{model_name}:[auth]` | 行操作（buttons） |
+
+> **规则**：`service` 值必须与 §4 `@MethodService(name=...)` 或内置服务名完全一致；`auth` 值在同一 grid 视图内必须唯一；tbar 放全局操作（新增），buttons 放行级操作（编辑/删除/自定义）。
+
 ## 6. 数据和权限
 
 - 种子数据：
 - 字典：
 - 附件：
-- 菜单权限：（详细权限码定义见 `integration-map.md` 的"权限码总览"和 `sdd-contracts.md` 的"权限码总览"——后端规格只声明本模型用到了哪些权限码，**完整定义和角色映射放在权限码总览**）
-- 按钮权限：（同上，引用权限码总览）
-- 服务权限：（同上）
+- **权限码汇总**（从 §4 服务设计表的 `权限` 列聚合，格式 `{model_name}:{action}`）：
+  - 菜单权限：`{model_name}:read`
+  - 按钮/服务权限：`{model_name}:create` / `{model_name}:update` / `{model_name}:delete` / `[自定义 auth]`
+  - > 完整定义和角色映射放在 `integration-map.md` 权限码总览；本规格只声明本模型用到的权限码，不重复定义角色映射。
 - 多租户/作用域：
 - 多语言：
 

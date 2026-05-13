@@ -28,6 +28,8 @@
 | 代码蓝图（Blueprint） | `在开始实现前，为 [功能名称] 生成代码蓝图：后端文件清单（路径/类型/关键内容）和前端扩展清单（路径/扩展类型/selector/id来源）。不写真实代码，只描述结构。` |
 | 漂移检测（Spec Sync） | `对 specs/features/[feature]/ 和当前工程代码做漂移检测，按"代码超前/规格超前/真实冲突"分类列出每条漂移，给出最小处理建议，不修改文件。` |
 | PR 描述（PR Bridge） | `基于 specs/features/[phaseN-feature]/ 目录生成 PR 描述，包含功能概述、变更范围（后端/前端）、规格目录链接、验收清单、待确认事项。` |
+| AC→TC 提取 | `读取 specs/features/[feature]/requirements.md 的验收标准，生成测试用例规格：后端服务测试（TC-BE-xx，覆盖正常流程/状态拒绝/权限拦截/必填校验）和前端验收场景（TC-FE-xx，覆盖加载/增删改查/权限显隐/空态异常态）。输出写入 validation.md 测试用例规格节，不写代码。` |
+| 测试缺口扫描 | `扫描 specs/features/[feature]/validation.md 的测试覆盖率追踪表，列出所有"⬜ 待执行"的 TC-ID；按严重度分类（Critical：权限/数据完整性；Medium：用户可见流程；Low：内部逻辑）；给出每条 TC 的推荐执行顺序和前置条件。仅报告，不修改文件。` |
 
 ### 实现计划与任务
 
@@ -46,6 +48,7 @@
 | 阶段复盘 | `Phase N 完成，请更新 roadmap.md、integration-map.md 和 decisions.md，记录技术债和下阶段重点。` |
 | 失败诊断 | `验证失败，请先分类为规格问题、实现问题、环境问题、平台能力限制或原型输入不足，再给出证据和最小修复方案。` |
 | 更新变更记录 | `基于本次已完成需求，更新 CHANGELOG.md 的 [未发布] 部分，并同步 decisions.md 中影响后续实现的决策。` |
+| EDCR 能力发现 | `对存量 IIDP 项目执行 EDCR 四步法：E（证据采集，只读不推断）→ D（领域地图：模型/服务/视图/菜单/前端扩展）→ C（能力分层：标准对齐/标准偏离/自定义有据/自定义技术债）→ R（IIDP 威胁矩阵：STRIDE 六类）。输出写入 specs/legacy/[module]-business-rules.md，不修改工程代码。` |
 
 ## 工具与命令
 

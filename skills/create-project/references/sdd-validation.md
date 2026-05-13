@@ -1,5 +1,128 @@
 # IIDP 实现、验证与复盘
 
+## 测试用例规格（从 AC 派生）
+
+### 触发时机
+
+Step 1.5a（backend-spec.md 生成后）立即执行 AC 提取，将 `requirements.md` 验收标准转化为结构化测试用例，写入当前 feature 的 `validation.md` 测试用例规格节。tasks.md 中的测试任务块通过 TC-ID 与此节对应。
+
+### AC → TC 提取 Prompt
+
+```text
+请读取 specs/features/[phaseN-feature]/requirements.md 的验收标准，生成测试用例规格：
+
+1. 后端服务测试（TC-BE-xx）：每个 @MethodService 的每条 AC 生成一个 TC。
+   - 包含：TC-ID、AC 来源、测试类型（单元/集成）、前置条件、操作步骤（伪代码）、预期结果、覆盖状态（待执行）。
+   - 优先覆盖：正常流程、状态拒绝（非法状态转移）、权限拦截（无 auth 时拒绝）、必填校验。
+
+2. 前端验收场景（TC-FE-xx）：每个用户可见流程的每条 AC 生成一个 TC。
+   - 包含：TC-ID、AC 来源、前置条件、操作步骤（人工操作描述）、预期结果、覆盖状态（待执行）。
+   - 优先覆盖：页面加载、增删改查主流程、权限显隐、空态/异常态展示。
+
+3. 输出格式：Markdown 表格 + 每个 TC 的详细描述块（见下方模板）。
+4. 不要编写真实代码；只产出规格描述，等待 tasks.md 测试任务执行。
+```
+
+### 测试用例格式
+
+**覆盖率追踪表**（写在 validation.md 顶部，随执行更新）：
+
+```markdown
+## 测试覆盖率
+
+| TC-ID | 类型 | AC 来源 | 测试内容摘要 | 覆盖状态 |
+|---|---|---|---|---|
+| TC-BE-01 | 后端·单元 | AC-01 正常提交 | 草稿→已提交状态转移 | ⬜ 待执行 |
+| TC-BE-02 | 后端·单元 | AC-01 | 非草稿拒绝，抛 ModelException | ⬜ 待执行 |
+| TC-BE-03 | 后端·单元 | AC-02 权限控制 | 无 order:submit auth 时拒绝 | ⬜ 待执行 |
+| TC-FE-01 | 前端·手动 | AC-03 列表展示 | 进入页面后表格有数据 | ⬜ 待执行 |
+| TC-FE-02 | 前端·手动 | AC-04 新增流程 | 点击新增，填写，提交，列表刷新 | ⬜ 待执行 |
+```
+
+覆盖状态枚举：`⬜ 待执行` / `✅ 通过` / `❌ 失败` / `⏸ 阻塞`
+
+**TC 详细描述块（后端服务测试）**：
+
+```markdown
+### TC-BE-01：正常提交——草稿→已提交
+
+- **类型**：后端·单元测试
+- **AC 来源**：requirements.md AC-01
+- **测试文件**：`src/test/java/[pkg]/[ModuleName]ServiceTest.java`
+- **方法名**：`submitOrder_success_draftToSubmitted()`
+- **前置条件**：数据库存在 status=DRAFT 的订单记录；当前用户有 order:submit 权限
+- **操作步骤**：
+  1. 构造入参：`{ orderId: [testId] }`
+  2. 调用 `[ServiceName].submit(meta, args)`
+  3. 查询记录状态
+- **预期结果**：记录 status 变为 SUBMITTED；无异常抛出
+- **IIDP 适配说明**：`[框架测试接入方式：待确认，可用 @SpringBootTest + Meta 注入，或 Mock IIDP 上下文]`
+- **覆盖状态**：⬜ 待执行
+```
+
+**TC 详细描述块（前端验收场景）**：
+
+```markdown
+### TC-FE-01：列表页加载——表格有数据行
+
+- **类型**：前端·手动验收
+- **AC 来源**：requirements.md AC-03
+- **执行环境**：IIDP 运行时，浏览器
+- **前置条件**：后端已部署；数据库有至少 1 条有效记录；当前用户有列表查看权限
+- **操作步骤**：
+  1. 登录系统，导航至 [菜单路径]
+  2. 等待页面加载完成（网络请求结束）
+  3. 观察表格区域
+- **预期结果**：表格显示至少 1 行数据；无报错弹窗；分页显示正确
+- **异常态验收**：无数据时显示空态提示，不显示报错
+- **覆盖状态**：⬜ 待执行
+```
+
+### 执行结果记录
+
+每条 TC 执行后，更新覆盖率追踪表的"覆盖状态"字段，并在详细块末尾追加：
+
+```markdown
+- **执行时间**：[日期]
+- **执行结果**：✅ 通过 / ❌ 失败
+- **失败详情**（失败时填写）：[错误信息 / 截图路径 / 复现步骤]
+- **关联任务**：tasks.md [TC-BE-01] checkbox
+```
+
+### Phase 完成门控
+
+Phase 声明完成前，覆盖率追踪表须满足：
+- 所有 TC-BE-xx：无 `⬜ 待执行`（必须执行，结果为通过或有记录的失败）
+- 所有 TC-FE-xx：无 `⬜ 待执行`
+- ❌ 失败 条目必须在 tasks.md 中有对应修复任务，或在 decisions.md 中记录延期理由
+
+### 测试缺口扫描（Phase 完成前触发）
+
+在 Phase 完成门控前，执行缺口扫描，确认无遗漏：
+
+**触发时机**：Step 5 Validate 全部静态检查通过后、声明 Phase 完成前。
+
+**扫描范围**：当前 feature 的 `validation.md` 覆盖率追踪表。
+
+| 严重度 | 判断依据 | 处理规则 |
+|---|---|---|
+| Critical | 权限拦截、数据完整性、状态合法性相关 TC | 必须执行，不得延期 |
+| Medium | 用户可见主流程、增删改查、弹窗交互 TC | 本 Phase 内执行；如阻塞须记录原因 |
+| Low | 内部逻辑、边界条件、样式/文案 TC | 可延期至下一 Phase，记入 roadmap.md 技术债 |
+
+测试缺口扫描 Prompt：
+
+```text
+扫描 specs/features/[feature]/validation.md 的测试覆盖率追踪表：
+1. 列出所有「⬜ 待执行」的 TC-ID，按严重度（Critical/Medium/Low）分类。
+2. Critical 条目：列出前置条件和最小执行步骤。
+3. Medium 条目：给出推荐执行顺序。
+4. Low 条目：确认可延期，给出 roadmap.md 记录建议。
+5. 仅输出扫描报告，不修改任何文件。
+```
+
+---
+
 ## 标准执行顺序
 
 ```text
@@ -10,6 +133,12 @@
 5. 能运行时执行构建或启动验证
 6. 对照 validation.md 写验证结果
 ```
+
+## AC 提取 Prompt 入口
+
+在 Step 1.5a 完成 backend-spec.md 后，运行"AC → TC 提取 Prompt"（见上方 [AC → TC 提取 Prompt](#ac--tc-提取-prompt) 节），将生成的测试用例规格写入当前 feature 的 `validation.md`，并在 `tasks.md` 中为每个 TC-ID 添加对应的测试任务 checkbox。
+
+---
 
 ## 后端验证清单
 
@@ -238,6 +367,129 @@ Spec Sync Prompt：
 3. 给出每条漂移的最小处理建议（更新规格 / 加任务 / 写 ADR）。
 4. 在分类完成前不要修改任何文件。
 ```
+
+### 漂移修复：propose / apply / backfill
+
+发现漂移后，**不要立即修改文件**。按三步流程完成修复闭环：
+
+```text
+propose（提方案）→ 用户审批 → apply（执行方案）
+                              ↗ 若为代码超前且无规格 → backfill（反向回填）
+```
+
+#### Step 1 — propose：生成修复提案
+
+对每条漂移，AI 输出结构化修复提案，**不执行任何文件操作**：
+
+提案格式：
+
+```markdown
+## 漂移修复提案
+
+### D-01（代码超前于规格）
+- **漂移描述**：OrderService.submit 新增了 `remark` 字段，但 requirements.md 未登记。
+- **目标文件**：`specs/features/phase1-order/requirements.md`
+- **建议变更**：在字段清单中补充 `remark: String?`（可选备注）。
+- **影响评估**：不影响其他功能；纯规格补录。
+- **操作类型**：update-spec
+
+### D-02（规格超前于代码）
+- **漂移描述**：integration-map.md 登记了 `order:export` 权限码，但 OrderService 未实现导出方法。
+- **目标文件**：`specs/features/phase1-order/tasks.md`
+- **建议变更**：新增任务 `实现 OrderService.export`，优先级 P1。
+- **操作类型**：add-task
+
+### D-03（真实冲突）
+- **漂移描述**：requirements.md 要求状态枚举为 DRAFT/SUBMITTED，代码实现为 DRAFT/PENDING/APPROVED。
+- **目标文件**：`specs/features/phase1-order/decisions.md`
+- **建议变更**：写入 ADR 说明代码三态的业务来源，以代码为准并更新规格。
+- **操作类型**：write-adr + update-spec
+- **需用户决策**：是以代码为准（三态），还是以规格为准（二态）？
+```
+
+propose Prompt：
+
+```text
+请对 [specs/features/phaseN-feature/] 漂移检测结果生成修复提案：
+1. 每条漂移输出一个提案块（D-xx）：漂移描述、目标文件、建议变更、影响评估、操作类型。
+2. 操作类型只能是：update-spec / add-task / write-adr / backfill-spec。
+3. 真实冲突类漂移必须标注「需用户决策」，并列出两个选项的影响。
+4. 不要执行任何修改；输出提案后等待用户逐条审批。
+```
+
+#### Step 2 — apply：执行已审批提案
+
+用户确认提案（逐条或批量确认）后，AI 按以下规则执行：
+
+| 操作类型 | 执行动作 | 输出 |
+|---|---|---|
+| `update-spec` | 更新 requirements.md 或 integration-map.md 对应字段 | 显示 diff，标注来源（反向提取/规格修正）|
+| `add-task` | 在 tasks.md 末尾追加任务，标注优先级和来源漂移 ID | 显示新增任务内容 |
+| `write-adr` | 在 decisions.md 追加 ADR 条目，标注以哪一侧为准 | 显示 ADR 内容 |
+| `backfill-spec` | 触发 backfill 流程（见下方）| 输出回填草稿 |
+
+执行规则：
+- 只执行已明确审批的条目；跳过「需用户决策」未决条目。
+- 每条执行完成后，在漂移登记表中标注 `✅ 已处理` 和处理时间。
+- 同一文件有多条修改时，合并为单次 Edit 操作，不多次写入。
+
+apply Prompt：
+
+```text
+以下漂移提案已审批，请依次执行（仅执行列出的 ID）：
+- [D-01]：update-spec，目标 requirements.md
+- [D-03]：write-adr，以代码三态为准
+
+执行规则：
+1. 按操作类型执行，不扩大范围。
+2. 显示每条操作的 diff 或新增内容。
+3. 执行完成后更新漂移登记表，标注「✅ 已处理」。
+4. 未审批的条目（如 D-02）跳过，不操作。
+```
+
+#### Step 3 — backfill：代码超前时反向回填规格
+
+当某个模块完全没有规格（存量项目接入或早期开发未写 spec），使用 backfill 从代码反向生成规格草稿：
+
+**触发条件**：
+- 能力分层结果中存在「自定义扩展（技术债）」条目。
+- 漂移检测发现代码实现有 5 条以上无规格对应。
+- 用户明确要求补写规格。
+
+**回填输出**：生成草稿片段，插入对应规格文件，**全部标注 `[反向提取，待确认]`**：
+
+```markdown
+<!-- backfill: 以下内容由代码反向提取，须人工核对后去除标注 -->
+
+### 模型字段（反向提取，待确认）
+| 字段名 | Java 类型 | 必填 | 来源 |
+|---|---|---|---|
+| orderNo | String | 是 | OrderModel.java:@Property(name="orderNo") |
+| remark | String | 否 | OrderModel.java:@Property(name="remark") |
+
+### 服务契约（反向提取，待确认）
+| 服务名 | auth | 入参 | 来源 |
+|---|---|---|---|
+| submit | order:submit | orderId: Long | OrderService.java:@MethodService |
+```
+
+backfill Prompt：
+
+```text
+请对 [模块路径/Java 类] 做规格反向回填：
+1. 从 @Model、@Property 提取字段清单（字段名、类型、必填、注解原文）。
+2. 从 @MethodService 提取服务契约（方法名、auth、核心入参、返回类型）。
+3. 从 views/*.json 提取视图 key、按钮 service 和权限码。
+4. 从前端扩展文件提取 selector、hook 路径、数据源名。
+5. 所有输出条目标注 [反向提取，待确认] 和来源文件行号。
+6. 输出格式为可直接粘贴到 requirements.md / integration-map.md 的 Markdown 片段。
+7. 不修改任何文件；输出草稿等待用户确认后再执行 apply。
+```
+
+**回填后的必要动作**：
+- 用户确认回填草稿后，执行 `apply` 写入规格文件。
+- 在 decisions.md 记录回填来源、确认人和确认时间。
+- 回填完成后运行完整漂移检测，确认无残留「代码超前于规格」条目。
 
 ---
 

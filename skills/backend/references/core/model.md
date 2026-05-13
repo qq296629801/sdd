@@ -7,11 +7,6 @@
 ```java
 package com.sie.iidp.{appPkg}.{moduleName}.model;
 
-// ===== 平台插件（代码生成，必须引入）=====
-import com.sie.meta.plugin.Getter;
-import com.sie.meta.plugin.Setter;
-import com.sie.meta.plugin.StaticVar;
-
 // ===== 模型注解（必须引入）=====
 import com.sie.snest.sdk.BaseModel;
 import com.sie.snest.sdk.annotation.meta.Model;
@@ -55,9 +50,6 @@ import com.sie.snest.engine.db.relationdb.provider.SqlProvider;
 import com.sie.snest.sdk.cache.RedisHelper;         // Redis 分布式锁 / 缓存
 import com.sie.snest.engine.utils.ConfigUtils;      // 读取配置中心值
 
-// ===== 日志（推荐）=====
-import lombok.extern.slf4j.Slf4j;
-
 // ===== 工具类（按需）=====
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -71,10 +63,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@StaticVar   // 自动生成字段名常量（F_NAME = "name"）
-@Getter
-@Setter
-@Slf4j
 @Model(
     name = "{model_name}",
     displayName = "{中文名}",

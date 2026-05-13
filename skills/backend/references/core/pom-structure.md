@@ -84,12 +84,37 @@ fi
 | Docker | Docker Compose v2，`docker compose config` 必须可解析 |
 | 默认应用端口 | `8060` |
 
-构建时如果终端默认 `JAVA_HOME` 指向 JRE，需要显式指定 JDK：
+构建时须先确认本地 Java 版本，再选对应命令：
+
+```bash
+java -version   # 查看当前 JDK 版本
+```
+
+**情况 A：本地已安装 JDK 8，使用 JAVA_HOME 显式指定（推荐）**
 
 ```bash
 cd iidp-backend-demo-ai
-JAVA_HOME=$(/usr/libexec/java_home -v 1.8.0_451) mvn -s ./settings.xml -DskipTests clean package
+
+# macOS（/usr/libexec/java_home 自动定位）
+JAVA_HOME=$(/usr/libexec/java_home -v 1.8) mvn -s ./settings.xml -DskipTests clean package
+
+# Linux（路径按实际安装位置调整）
+JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 mvn -s ./settings.xml -DskipTests clean package
+
+# Windows CMD（路径按实际安装位置调整）
+set JAVA_HOME=C:\Program Files\Java\jdk1.8.0_xxx && mvn -s ./settings.xml -DskipTests clean package
 ```
+
+**情况 B：本地只有 JDK 17 / 21，无法安装 JDK 8**
+
+POM 已配置 `maven.compiler.source=8 target=8`，JDK 17/21 的 `javac` 可直接编译；跳过测试时一般可通过编译：
+
+```bash
+cd iidp-backend-demo-ai
+mvn -s ./settings.xml -DskipTests clean package
+```
+
+> 注意：JDK 17+ 对 Spring Boot 2.x 的反射访问有额外限制，**运行时**可能出现 `InaccessibleObjectException`；如有运行需求，建议仍以 JDK 8 或 JDK 11 为主。
 
 ---
 
@@ -843,12 +868,37 @@ Docker 配置必须使用 compose 服务名 `mysql`、`redis`、`minio`，不要
 
 ### 12.1 Maven 打包
 
+执行打包前，先检查本地 Java 版本并选择对应命令：
+
 ```bash
-cd iidp-backend-demo-ai
-JAVA_HOME=$(/usr/libexec/java_home -v 1.8.0_451) mvn -s ./settings.xml -DskipTests clean package
+java -version   # 确认是 JDK（含 javac）而非 JRE
 ```
 
-当前验证过的 Reactor Summary：
+**JDK 8 可用时（推荐，完整兼容）**
+
+```bash
+cd iidp-backend-demo-ai
+
+# macOS
+JAVA_HOME=$(/usr/libexec/java_home -v 1.8) mvn -s ./settings.xml -DskipTests clean package
+
+# Linux（路径按实际安装位置调整）
+JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 mvn -s ./settings.xml -DskipTests clean package
+
+# Windows CMD（路径按实际安装位置调整）
+set JAVA_HOME=C:\Program Files\Java\jdk1.8.0_xxx && mvn -s ./settings.xml -DskipTests clean package
+```
+
+**仅有 JDK 17 / 21 时（编译可通过，运行存在风险）**
+
+POM 已设置 `maven.compiler.source=8 target=8`，可直接构建：
+
+```bash
+cd iidp-backend-demo-ai
+mvn -s ./settings.xml -DskipTests clean package
+```
+
+当前验证过的 Reactor Summary（JDK 8 环境）：
 
 ```text
 Reactor Summary for iidp-backend-demo 1.0-SNAPSHOT:
@@ -860,7 +910,9 @@ sie-iidp-demo-common: SUCCESS
 BUILD SUCCESS
 ```
 
-如果直接运行 `mvn -s ./settings.xml -DskipTests clean package` 报 `No compiler is provided in this environment`，说明当前 `JAVA_HOME` 指向 JRE，需要切换到 JDK。
+常见错误：
+- `No compiler is provided in this environment`：当前 `JAVA_HOME` 指向 JRE，须切换到 JDK。
+- `InaccessibleObjectException` / 模块访问异常：JDK 17/21 运行 Spring Boot 2.x 的已知问题，改用 JDK 8 或 11 解决。
 
 ### 12.2 Docker Compose 静态检查
 

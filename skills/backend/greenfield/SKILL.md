@@ -23,7 +23,12 @@ description: >-
 
 1. **读规范源**：完整阅读 [`../references/core/pom-structure.md`](../references/core/pom-structure.md) **§1 开发与运行环境**（Git、克隆地址、本地目录检查脚本、JDK/Maven、`settings.xml`、Docker 等）与 **§2 顶层目录完整结构**，以该文件为唯一工程拓扑与命令口径；本节不复制其中的长脚本与安全敏感细节。
 2. **执行 Git 与克隆规则**：按 `pom-structure.md` 自检 `git`、核对远端是否为文档所列仓库、处理已存在目录与未提交变更；不可访问时在交付说明中记录事实，不得假定已同步最新代码。
-3. **构建命令**：在文档指定的工程根目录执行 Maven；**必须**使用项目提供的 `settings.xml`（例如 `-s ./settings.xml`，路径以 `pom-structure.md` 与宿主仓库为准）；若文档要求为 JDK 8 显式设置 `JAVA_HOME`，须遵守。
+3. **构建命令**：
+   - 先执行 `java -version` 检测本地 Java 版本：
+     - **JDK 8**：按 `pom-structure.md` §12.1 选择对应平台（macOS / Linux / Windows）的 `JAVA_HOME` 显式指定命令；
+     - **JDK 17 / 21，无 JDK 8**：POM 已配置 `source=8 target=8`，可直接运行 `mvn -s ./settings.xml -DskipTests clean package`，但须向用户说明运行时（非编译期）可能存在 Spring Boot 2.x 兼容性风险；
+     - **JRE（无 javac）**：报错 `No compiler is provided`，须提示用户安装 JDK 并重试。
+   - 必须使用项目提供的 `settings.xml`（`-s ./settings.xml`），路径以 `pom-structure.md` 与宿主仓库为准。
 4. **首包目标**：以 **`BUILD SUCCESS`**、无编译错误为准；私服/依赖不可达且与本次克隆无关时，在说明中区分「工程已就位」与「环境阻塞」，不伪造成功。
 5. **可选本地运行**：若用户需要 Docker Compose 或启动模块，继续遵循 `pom-structure.md` 中 Dockerfile、`docker-compose.yml`、`application*.properties` 与端口等章节；与引擎、MinIO、MySQL、Redis 服务名一致。
 6. **交付前自检**：能执行时，按 [`../references/core/validation-checklist.md`](../references/core/validation-checklist.md) 在可行范围内做静态与构建相关检查。
@@ -38,7 +43,8 @@ description: >-
 | 现象 | 处理方向 |
 |---|---|
 | 依赖解析失败 | 是否使用了仓库根 `settings.xml`；私服/网络是否可达；与「仅缺业务代码」区分说明 |
-| 编译报 JDK 问题 | 使用 JDK 而非 JRE；按 `pom-structure.md` 设置 `JAVA_HOME` |
+| `No compiler is provided in this environment` | 当前 `JAVA_HOME` 指向 JRE；须切换到 JDK，按 `pom-structure.md` §12.1 选平台命令 |
+| 本地只有 JDK 17 / 21 | 直接运行 `mvn -s ./settings.xml -DskipTests clean package` 可通过编译（POM 已设 source=8 target=8）；运行时需注意 Spring Boot 2.x 兼容性 |
 | Compose 起不来 | 对照 `pom-structure.md` 检查服务名、端口、挂载 `apps/` 与 `apps.json` 是否一致 |
 | 继续写业务却未克隆父工程 | 先回到本节步骤 1～3，再进入根 `SKILL.md` Step 1 |
 

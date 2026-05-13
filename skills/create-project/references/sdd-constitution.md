@@ -86,6 +86,12 @@ specs/
 - 不读取或修改 `node_modules`、`dist`、`distApp`、`distTmp`、`umdComps`、`build`
 - 目标节点 id 不得猜测；优先用户提供，其次标准模板规则库，最后询问
 - `effectPaths.includeRegExp` 不带 `/iidp/` 前缀
+
+## Git 工作流约定
+- feature 分支命名：`feature/{appName}/phase{N}-{feature-name}`（与 `specs/features/phase{N}-{feature-name}/` 目录对齐）
+- 每个 feature 对应一个分支和一个 PR，从主干（main/master）创建
+- 合并策略：Squash merge，PR 描述引用对应 `specs/features/` 规格目录
+- **写代码前必须切换到 feature 分支**，不得在主干直接修改工程文件
 ```
 
 ## ui-constitution.md 模板

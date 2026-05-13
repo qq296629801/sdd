@@ -15,16 +15,17 @@
 | 文件 | 内容 | 何时读取 |
 |---|---|---|
 | `sdd-constitution.md` | 核心定位、项目宪法、`mission.md`、`iidp-stack.md`、`ui-constitution.md`、`integration-map.md` | 建项、补项目宪法、补 UI 宪法、定义跨功能约束 |
-| `sdd-workflow.md` | 规格层次、功能迭代闭环、能力识别、计划、任务、验收目录 | 生成 requirements/plan/tasks/validation，或解释 SDD 流程 |
+| `sdd-workflow.md` | 规格层次、功能迭代闭环、能力识别、Critique、Plan Review Gate、Blueprint、计划、任务、验收目录 | 生成 requirements/plan/tasks/validation，或解释 SDD 流程 |
 | `sdd-backend.md` | IIDP 后端规格模板：命名、工程文件、模型、服务、视图、菜单、权限、验收 | 生成或审核后端规格 |
 | `sdd-frontend.md` | IIDP 前端**技术落地**规格模板：节点树、selector、`ds_config`、绑定、事件、commands、hook；读完后按 `SKILL.md` 前端子 skill 路由规则继续执行 | 已知实现方式，需要输出节点/绑定/事件技术细节时；从需求生成规格时先走 `iidp-frontend-spec-doc` |
 | `sdd-frontend-interaction.md` | 前端交互设计规格：用户流程、节点层级、状态表、响应式、可访问性、验收标准 | 需要页面级交互状态、响应式或可访问性规格时；与 `sdd-frontend.md` 配合使用，不重复输出 |
 | `sdd-contracts.md` | 前后端契约：JSON-RPC、Filter、按钮服务、节点 id、节点属性与事件 | 生成契约表、接口参数、视图按钮或节点扩展契约 |
-| `sdd-validation.md` | 实现顺序、后端/前端验证、偏差处理、失败分类、阶段复盘、CHANGELOG | 验证交付、处理失败、阶段复盘、维护变更记录 |
+| `sdd-validation.md` | 实现顺序、后端/前端验证、偏差处理、失败分类、阶段复盘、Spec Sync 漂移检测、PR Bridge PR 描述生成、CHANGELOG | 验证交付、处理失败、阶段复盘、漂移检测、生成 PR 描述 |
 | `sdd-brownfield.md` | 存量项目接入：侦察、契约提取、增量规格 | 接入或改造已有 IIDP 项目 |
 | `usage.md` | create-project 详细使用说明、输入输出、Prompt、质量检查、常见误用 | 用户询问“怎么用 create-project”或需要完整操作指南时 |
 | `sdd-skill-maintenance.md` | `create-project` skill 维护规则、文件结构、校验命令 | 修改本 skill 或检查是否符合 skill 规范 |
 | `sdd-prompts-tools-principles.md` | Prompt 速查、工具命令、核心原则、常见陷阱 | 用户要提示词、工具清单、原则或总览时 |
+| `sdd-review.md` | 深度审查：触发时机、5 个标准子 Agent（规格一致性/后端对齐/前端对齐/安全边界/AI 可操作性）、汇总报告格式、调用约定 | Phase 结束、PR 前或规格重大变更时触发多 Agent 并行审查 |
 
 
 ## IIDP SDD 总原则
@@ -72,6 +73,7 @@ agents/
 │           ├── sdd-frontend-interaction.md
 │           ├── sdd-contracts.md
 │           ├── sdd-validation.md
+│           ├── sdd-review.md
 │           ├── sdd-brownfield.md
 │           ├── usage.md
 │           ├── sdd-skill-maintenance.md

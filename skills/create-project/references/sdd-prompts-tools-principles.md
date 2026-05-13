@@ -20,6 +20,15 @@
 | 交互节点规格 | `把 [页面/原型] 转成 IIDP 节点规格，输出页面节点树、selector、ds_config、bind_、bind_on_、commands、hook 和验收点。` |
 | 前后端契约 | `为 [功能] 生成前后端契约表，包含 model、service、args、view key、menu key、auth、前端实现方式和待确认事项。` |
 
+### 规格质量门控
+
+| 场景 | Prompt 模板 |
+|---|---|
+| 规格批判（Critique） | `对 [requirements.md] 做 Critique：从产品战略视角质疑功能价值和边界，从工程风险视角识别待确认阻塞项和漂移风险。不修改规格，只输出发现报告。` |
+| 代码蓝图（Blueprint） | `在开始实现前，为 [功能名称] 生成代码蓝图：后端文件清单（路径/类型/关键内容）和前端扩展清单（路径/扩展类型/selector/id来源）。不写真实代码，只描述结构。` |
+| 漂移检测（Spec Sync） | `对 specs/features/[feature]/ 和当前工程代码做漂移检测，按"代码超前/规格超前/真实冲突"分类列出每条漂移，给出最小处理建议，不修改文件。` |
+| PR 描述（PR Bridge） | `基于 specs/features/[phaseN-feature]/ 目录生成 PR 描述，包含功能概述、变更范围（后端/前端）、规格目录链接、验收清单、待确认事项。` |
+
 ### 实现计划与任务
 
 | 场景 | Prompt 模板 |

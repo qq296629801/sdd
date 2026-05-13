@@ -185,3 +185,103 @@ Phase [N] 已完成。请只更新规格和维护文档，不写代码：
 5. 更新 CHANGELOG.md 的 [未发布] 部分。
 6. 列出遗留技术债、验证缺口和待确认事项。
 ```
+
+## Spec Sync：规格与实现漂移检测
+
+在以下时机触发漂移检测：合并 PR 后、存量项目接入后、发现实现与规格描述不一致时。
+
+### 检测范围
+
+| 检测项 | 规格来源 | 实现来源 | 漂移判断 |
+|---|---|---|---|
+| 模型字段 | `requirements.md` 字段清单 | Java `@Model` 文件 | 字段名、类型、必填不一致 |
+| 视图按钮与服务 | `integration-map.md` 契约表 | `views/*.json` 按钮 `service` | service 名、auth 不对齐 |
+| 菜单挂载 | `requirements.md` 菜单路径 | `data/menus.json` | 父菜单 key 或 view key 变更 |
+| 权限码 | `integration-map.md` 权限码总览 | Java `@MethodService` `auth` 参数 | 权限码增删或改名 |
+| 前端扩展节点 | 前端规格 `selector` 描述 | 实际扩展文件 | selector 目标节点 id 变更 |
+
+### 漂移处理规则
+
+发现漂移时，**先判断方向再决定处理方式**：
+
+| 方向 | 含义 | 处理方式 |
+|---|---|---|
+| 代码超前于规格 | 实现加了功能但规格没更新 | 更新 requirements/integration-map，decisions.md 记录原因 |
+| 规格超前于代码 | 规格写了但未实现 | 加入任务清单或标记为技术债 |
+| 真实冲突 | 规格与实现互相矛盾 | 写入 decisions.md，明确以哪个为准后再处理 |
+
+### 漂移检测命令
+
+```bash
+# 查找视图按钮的 service 声明，对照 integration-map
+rg -n '"service"' iidp-backend-demo-ai/sie-iidp-demo-apps --include="*.json"
+
+# 查找后端服务 auth 参数，对照权限码总览
+rg -n '"auth"' iidp-backend-demo-ai/sie-iidp-demo-apps --include="*.json"
+
+# 查找 @Model(name)，对照 model_name 命名
+rg -n '@Model\(name' iidp-backend-demo-ai/sie-iidp-demo-apps --include="*.java"
+
+# 查找前端扩展 selector，对照前端规格
+rg -n 'selector' [frontend-project]/apps/<appName>/views
+
+# 查找规格中的待确认项
+rg -n '待确认' specs/features/
+```
+
+Spec Sync Prompt：
+
+```text
+请对 [specs/features/phaseN-feature/] 和当前工程代码做漂移检测：
+1. 对照上方检测范围逐项检查。
+2. 按"代码超前 / 规格超前 / 真实冲突"分类列出每条漂移。
+3. 给出每条漂移的最小处理建议（更新规格 / 加任务 / 写 ADR）。
+4. 在分类完成前不要修改任何文件。
+```
+
+---
+
+## PR Bridge：从规格自动生成 PR 描述
+
+Step 5 Validate 全部通过后，AI 主动提示："已可生成 PR 描述，是否生成？"；用户也可随时触发。
+
+### 生成规则
+
+从 `specs/features/<feature>/` 目录读取规格文件，按以下结构生成：
+
+```markdown
+## PR 描述模板
+
+**Title**：`[Phase N] [功能名称]`（不超过 70 字符）
+
+**Body**：
+
+## 功能概述
+[来自 requirements.md 的使命陈述，1–2 句话]
+
+## 变更范围
+### 后端
+- [来自 tasks.md 后端任务块的 M 任务汇总]
+
+### 前端
+- [来自 tasks.md 前端任务块的 M 任务汇总，或"标准模板，无前端代码改动"]
+
+## 规格目录
+[`specs/features/phaseN-feature-name/`](specs/features/phaseN-feature-name/)
+
+## 验收清单
+- [ ] [来自 validation.md 的关键验收项]
+
+## 待确认 / 技术债
+- [来自 requirements.md 和 tasks.md 中未解决的待确认事项，若无则写"无"]
+```
+
+### PR Bridge Prompt
+
+```text
+请基于 specs/features/[phaseN-feature-name]/ 目录，生成 PR 描述：
+- Title 不超过 70 字符，格式：[Phase N] [功能名称]
+- Body 按 PR Bridge 模板输出：功能概述、变更范围（后端/前端）、规格目录链接、验收清单、待确认事项
+- 变更范围只列 M 级（中等）及以上任务，S 级（小）任务归并为一行摘要
+- 待确认事项来自规格，若全部已解决则写"无"
+```

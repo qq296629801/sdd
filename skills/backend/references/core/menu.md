@@ -36,21 +36,15 @@
       "active": true,
       "model": "{model_name}",
       "view": "{model_name}_grid,{model_name}_search,{model_name}_form",
-      "parent_id": "{appPkg}_{moduleName}_root_menu"
+      "parent_ids": {
+        "@ref": "{appPkg}_{moduleName}_root_menu"
+      }
     }
   }
 }
 ```
 
-`parent_id` 是生成新菜单时的推荐写法；demo 示例里也常见引用写法：
-
-```json
-"parent_ids": {
-  "@ref": "demo_example_menu"
-}
-```
-
-需要多父级、复用菜单或跟随历史 App 风格时，可使用 `parent_ids`。
+`parent_ids: { "@ref": "..." }` 是推荐写法。`parent_id` 直接字符串写法不推荐。
 
 ---
 
@@ -64,8 +58,8 @@
 | `active` | 是 | 是否启用，通常为 `true` |
 | `model` | 功能菜单必填 | 关联的模型名，即 Java `@Model(name)` |
 | `view` | 功能菜单必填 | 视图 key。多个后端视图用英文逗号连接 |
-| `parent_id` | 子菜单必填 | 父菜单 `name` |
-| `parent_ids` | 可选 | 引用式父菜单，常见写法 `{ "@ref": "父菜单name" }` |
+| `parent_ids` | 子菜单必填 | 引用式父菜单，推荐写法 `{ "@ref": "父菜单name" }` |
+| `parent_id` | 不推荐 | 直接字符串，不推荐使用 |
 | `filter` | 可选 | 进入该菜单后统一追加到接口请求的过滤条件 |
 | `config` | 可选 | 按接口或字段追加过滤条件、缓存等菜单级配置 |
 
@@ -86,7 +80,7 @@
     "active": true,
     "model": "books_manage",
     "view": "books_manage_grid,books_manage_search,books_manage_form",
-    "parent_id": "books_bookmgr_root_menu",
+    "parent_ids": { "@ref": "books_bookmgr_root_menu" },
     "filter": [["status", "=", "IN_STOCK"]]
   },
   "books_borrowed_menu": {
@@ -96,7 +90,7 @@
     "active": true,
     "model": "books_manage",
     "view": "books_manage_grid,books_manage_search,books_manage_form",
-    "parent_id": "books_bookmgr_root_menu",
+    "parent_ids": { "@ref": "books_bookmgr_root_menu" },
     "filter": [["status", "=", "BORROWED"]]
   }
 }
@@ -185,7 +179,7 @@
       "active": true,
       "model": "books_manage",
       "view": "books_manage_grid,books_manage_search,books_manage_form",
-      "parent_id": "books_bookmgr_root_menu"
+      "parent_ids": { "@ref": "books_bookmgr_root_menu" }
     },
     "books_cate_menu": {
       "name": "books_cate_menu",
@@ -194,7 +188,7 @@
       "active": true,
       "model": "books_cate",
       "view": "books_cate_tree,books_cate_form,books_cate_grid,books_cate_search",
-      "parent_id": "books_bookmgr_root_menu"
+      "parent_ids": { "@ref": "books_bookmgr_root_menu" }
     },
 
     "books_readermgr_root_menu": {
@@ -210,7 +204,7 @@
       "active": true,
       "model": "books_reader",
       "view": "books_reader_grid,books_reader_search,books_reader_form",
-      "parent_id": "books_readermgr_root_menu"
+      "parent_ids": { "@ref": "books_readermgr_root_menu" }
     },
 
     "books_borrowmgr_root_menu": {
@@ -226,7 +220,7 @@
       "active": true,
       "model": "books_borrow",
       "view": "books_borrow_grid,books_borrow_search,books_borrow_form",
-      "parent_id": "books_borrowmgr_root_menu"
+      "parent_ids": { "@ref": "books_borrowmgr_root_menu" }
     }
   }
 }
@@ -276,7 +270,7 @@
 | 菜单不显示 | `app.json` 的 `data` 数组未登记 `menus.json`，或 jar 未加入 `apps/apps.json` |
 | 点菜单空白 | 菜单 `view` 未匹配任何后端视图 key，或视图文件未登记/未打进 jar |
 | 菜单 key 冲突 | 不同 app 的菜单 key 重复，统一加 `appPkg` 前缀 |
-| 子菜单找不到父菜单 | `parent_id` / `parent_ids.@ref` 与父菜单 `name` 不一致 |
+| 子菜单找不到父菜单 | `parent_ids.@ref` 与父菜单 `name` 不一致 |
 | 菜单顺序不对 | 调整同级菜单 `sequence` |
 | 复用菜单数据范围不对 | 菜单 `filter` 或 `config._self` 与接口自身 filter 组合不符合预期 |
 
@@ -285,6 +279,6 @@
 - 根菜单不写 `model` / `view`，功能菜单必须写。
 - 功能菜单 `model` 等于 Java `@Model(name)`。
 - 功能菜单 `view` 包含至少一个列表视图 key，通常同时含 search/form。
-- 父子关系使用 `parent_id` 或 `parent_ids`，不要两者混写指向不同父级。
+- 父子关系使用 `parent_ids: { "@ref": "父菜单name" }`（推荐），不使用 `parent_id` 直接字符串。
 - 复用后端视图时只改变菜单自身信息和过滤条件，不复制一份重复视图。
 - 每个菜单 key、`name`、路径/URL（若有）全局唯一。

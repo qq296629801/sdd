@@ -16,15 +16,15 @@
 - **列表 + 搜索 + 表单**：使用 IIDP 标准模板（grid + search + form），无需前端扩展代码
 - **详情页**（步骤条 + 左右布局 + 内联编辑切换）：待确认是否标准模板可覆盖，还是需要扩展视图/自定义组件
 
-## 契约（待 Clarify 后确认）
+## 契约
 
-- appName: `待确认`
-- appPkg: `待确认`
-- model_name: `待确认`
-- 视图 key 前缀: `待确认`
-- 菜单 key: `待确认`
-- 状态变更服务: `release` / `startProgress` / `complete` / `close`，auth: `待确认`
-- 外部依赖模型 `pm_product`、`pm_work_center`：跨 App 或同 App，`strong`/`weak` 待确认
+- appName: `demo-mes`
+- appPkg: `mes`
+- model_name: `mes_work_order`
+- 视图 key 前缀: `mes_work_order_`
+- 菜单 key: `mes_work_order_menu`
+- 状态变更服务: `release`(`mes_work_order:release`) / `startProgress`(`mes_work_order:start`) / `complete`(`mes_work_order:complete`) / `close`(`mes_work_order:close`)
+- 外部依赖模型：跨 App `weak` 引用，冗余字段存储，不建 ER 关联
 
 ## 核心业务规则
 
@@ -71,4 +71,10 @@
 
 ## Clarifications
 
-（待 Clarify 后填入）
+### Session 2026-05-13
+
+- Q: appName/appPkg/model_name 命名方案？ → A: `demo-mes` / `mes` / `mes_work_order` / `MesWorkOrder`
+- Q: `pm_product` 和 `pm_work_center` 是跨 App 还是同 App？ → A: 跨 App 弱引用（`weak`）；工单冗余存 productName/productCode/uom/workCenterName，不在本 App 建 ER 关联
+- Q: 状态变更是 4 个独立服务还是通用 changeStatus？ → A: 4 个独立 `@MethodService`（release/startProgress/complete/close），各自独立校验
+- Q: 详情页步骤条+左右布局是否 Phase 1 实现？ → A: Phase 1 只用标准 form 视图；步骤条/左右布局留 Phase 2 前端扩展
+- Q: 是否需要乐观锁 version 字段？ → A: 不加；状态变更服务内查库当前状态做状态校验，不符合抛 ModelException

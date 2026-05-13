@@ -12,7 +12,8 @@ Step 1.5a（backend-spec.md 生成后）立即执行 AC 提取，将 `requiremen
 请读取 specs/features/[phaseN-feature]/requirements.md 的验收标准，生成测试用例规格：
 
 1. 后端服务测试（TC-BE-xx）：每个 @MethodService 的每条 AC 生成一个 TC。
-   - 包含：TC-ID、AC 来源、测试类型（单元/集成）、前置条件、操作步骤（伪代码）、预期结果、覆盖状态（待执行）。
+   - 包含：TC-ID、AC 来源、前置条件、操作步骤、预期结果、覆盖状态（待执行）。
+   - 测试方式：`@ExtendWith(SieEngineTestExtension.class)` 集成测试，需数据库就绪。
    - 优先覆盖：正常流程、状态拒绝（非法状态转移）、权限拦截（无 auth 时拒绝）、必填校验。
 
 2. 前端验收场景（TC-FE-xx）：每个用户可见流程的每条 AC 生成一个 TC。
@@ -32,9 +33,9 @@ Step 1.5a（backend-spec.md 生成后）立即执行 AC 提取，将 `requiremen
 
 | TC-ID | 类型 | AC 来源 | 测试内容摘要 | 覆盖状态 |
 |---|---|---|---|---|
-| TC-BE-01 | 后端·单元 | AC-01 正常提交 | 草稿→已提交状态转移 | ⬜ 待执行 |
-| TC-BE-02 | 后端·单元 | AC-01 | 非草稿拒绝，抛 ModelException | ⬜ 待执行 |
-| TC-BE-03 | 后端·单元 | AC-02 权限控制 | 无 order:submit auth 时拒绝 | ⬜ 待执行 |
+| TC-BE-01 | 后端·集成 | AC-01 正常提交 | 草稿→已提交状态转移 | ⬜ 待执行 |
+| TC-BE-02 | 后端·集成 | AC-01 | 非草稿拒绝，抛 ModelException | ⬜ 待执行 |
+| TC-BE-03 | 后端·集成 | AC-02 权限控制 | 无 order:submit auth 时拒绝 | ⬜ 待执行 |
 | TC-FE-01 | 前端·手动 | AC-03 列表展示 | 进入页面后表格有数据 | ⬜ 待执行 |
 | TC-FE-02 | 前端·手动 | AC-04 新增流程 | 点击新增，填写，提交，列表刷新 | ⬜ 待执行 |
 ```
@@ -46,7 +47,7 @@ Step 1.5a（backend-spec.md 生成后）立即执行 AC 提取，将 `requiremen
 ```markdown
 ### TC-BE-01：正常提交——草稿→已提交
 
-- **类型**：后端·单元测试
+- **类型**：后端·集成测试
 - **AC 来源**：requirements.md AC-01
 - **测试文件**：`src/test/java/[pkg]/[ModuleName]ServiceTest.java`
 - **方法名**：`submitOrder_success_draftToSubmitted()`

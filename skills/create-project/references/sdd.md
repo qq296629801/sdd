@@ -25,6 +25,7 @@
 | `usage.md` | create-project 详细使用说明、输入输出、Prompt、质量检查、常见误用 | 用户询问“怎么用 create-project”或需要完整操作指南时 |
 | `sdd-skill-maintenance.md` | `create-project` skill 维护规则、文件结构、校验命令 | 修改本 skill 或检查是否符合 skill 规范 |
 | `sdd-prompts-tools-principles.md` | Prompt 速查、工具命令、核心原则、常见陷阱 | 用户要提示词、工具清单、原则或总览时 |
+| `sdd-review.md` | 深度审查：触发时机、5 个标准子 Agent（规格一致性/后端对齐/前端对齐/安全边界/AI 可操作性）、汇总报告格式、调用约定 | Phase 结束、PR 前或规格重大变更时触发多 Agent 并行审查 |
 
 
 ## IIDP SDD 总原则
@@ -72,6 +73,7 @@ agents/
 │           ├── sdd-frontend-interaction.md
 │           ├── sdd-contracts.md
 │           ├── sdd-validation.md
+│           ├── sdd-review.md
 │           ├── sdd-brownfield.md
 │           ├── usage.md
 │           ├── sdd-skill-maintenance.md

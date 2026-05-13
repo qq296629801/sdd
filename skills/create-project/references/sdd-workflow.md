@@ -17,19 +17,19 @@
     ↓
 [Frontend Spec] 按 sdd-frontend.md 模板生成 frontend-spec.md（必写，§9 记录实现分支）
     ↓
-[Interaction Spec] 含复杂状态/响应式/可访问性？→ 按 sdd-frontend-interaction.md 模板生成 interaction-spec.md
+[Interaction Spec] 含复杂状态/响应式/可访问性？→ 按 sdd-frontend-interaction.md 模板生成 interaction-spec.md（可选）
     ↓
-[Plan] 生成实现计划：后端优先，前端按实现分支决策
+[Plan] 生成实现计划：后端优先，前端按实现分支决策 （必写）
     ↓
-[Plan Review Gate] ★ 展示计划摘要，暂停等用户确认后才生成任务
+[Plan Review Gate] ★ 展示计划摘要，暂停等用户确认后才生成任务（可选）
     ↓
-[Tasks] 拆解可执行任务：文件级、服务级、视图级、验证级
+[Tasks] 拆解可执行任务：文件级、服务级、视图级、验证级（必写）
     ↓
 [Blueprint] ★ 生成代码蓝图（伪代码+文件清单），暂停等用户确认（可选）
     ↓
-[Implement] 按任务落地：一次一个任务，子 skill 读取 spec 文件
+[Implement] 按任务落地：一次一个任务，子 skill 读取 spec 文件（必写）
     ↓
-[Validate] 按 IIDP 清单验证；完成后提示生成 PR Bridge 描述
+[Validate] 按 IIDP 清单验证；完成后提示生成 PR Bridge 描述（必写）
 ```
 
 ## 规格分层

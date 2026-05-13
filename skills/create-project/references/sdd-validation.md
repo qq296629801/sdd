@@ -96,6 +96,31 @@ Phase 声明完成前，覆盖率追踪表须满足：
 - 所有 TC-FE-xx：无 `⬜ 待执行`
 - ❌ 失败 条目必须在 tasks.md 中有对应修复任务，或在 decisions.md 中记录延期理由
 
+### 测试缺口扫描（Phase 完成前触发）
+
+在 Phase 完成门控前，执行缺口扫描，确认无遗漏：
+
+**触发时机**：Step 5 Validate 全部静态检查通过后、声明 Phase 完成前。
+
+**扫描范围**：当前 feature 的 `validation.md` 覆盖率追踪表。
+
+| 严重度 | 判断依据 | 处理规则 |
+|---|---|---|
+| Critical | 权限拦截、数据完整性、状态合法性相关 TC | 必须执行，不得延期 |
+| Medium | 用户可见主流程、增删改查、弹窗交互 TC | 本 Phase 内执行；如阻塞须记录原因 |
+| Low | 内部逻辑、边界条件、样式/文案 TC | 可延期至下一 Phase，记入 roadmap.md 技术债 |
+
+测试缺口扫描 Prompt：
+
+```text
+扫描 specs/features/[feature]/validation.md 的测试覆盖率追踪表：
+1. 列出所有「⬜ 待执行」的 TC-ID，按严重度（Critical/Medium/Low）分类。
+2. Critical 条目：列出前置条件和最小执行步骤。
+3. Medium 条目：给出推荐执行顺序。
+4. Low 条目：确认可延期，给出 roadmap.md 记录建议。
+5. 仅输出扫描报告，不修改任何文件。
+```
+
 ---
 
 ## 标准执行顺序

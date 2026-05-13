@@ -1,8 +1,13 @@
 # IIDP 后端测试参考
 
-IIDP 服务测试通过 `@ExtendWith(SieEngineTestExtension.class)` 启动引擎上下文，
-再用 `BaseContextHandler.getMeta()` 获取 Meta，直接调用模型服务。
-这是平台提供的集成测试方式，不依赖外部 Mock 框架。
+两种测试策略分层使用，互相补充：
+
+| 策略 | 工具 | 需要数据库 | 适合测试 |
+|---|---|---|---|
+| **集成测试** | `SieEngineTestExtension` | ✅ 需要 | 完整服务流程、真实数据写入验证 |
+| **单元测试** | Mockito | ❌ 不需要 | 业务逻辑判断、状态校验、异常分支 |
+
+> H2 内存数据库方案：需确认 IIDP 引擎是否支持 H2 方言，确认后补充配置。
 
 ---
 
@@ -122,14 +127,109 @@ void testAsync() {
 
 ---
 
-## 注意事项
+## Mockito 单元测试（无需数据库）
+
+`BaseContextHandler.getMeta()` 是静态方法，需要 `mockito-inline` 依赖支持静态 mock。
+
+### POM 依赖
+
+```xml
+<dependency>
+    <groupId>org.mockito</groupId>
+    <artifactId>mockito-inline</artifactId>
+    <version>4.x.x</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.mockito</groupId>
+    <artifactId>mockito-junit-jupiter</artifactId>
+    <version>4.x.x</version>
+    <scope>test</scope>
+</dependency>
+```
+
+> `mockito-inline` 包含 `mockito-core`，不重复引入。Java 8 使用 Mockito 4.x；Java 11+ 可用 5.x。
+
+### 状态机服务单元测试
+
+```java
+import org.mockito.MockedStatic;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class {ModelName}ServiceUnitTest {
+
+    @Mock
+    private Meta meta;
+
+    @Mock
+    private RecordSet recordSet;
+
+    @Test
+    void {serviceName}_reject_illegalStatus() {
+        try (MockedStatic<BaseContextHandler> ctx =
+                 mockStatic(BaseContextHandler.class)) {
+
+            ctx.when(BaseContextHandler::getMeta).thenReturn(meta);
+            when(meta.get("{model_name}")).thenReturn(recordSet);
+
+            // 模拟查库返回非法前置状态的记录
+            Map<String, Object> record = Map.of("id", 1L, "status", "RELEASED");
+            when(recordSet.call(eq("find"), any(), any(), any(), any(), any()))
+                .thenReturn(record);
+
+            // 预期抛出 ModelException
+            assertThrows(ModelException.class, () ->
+                meta.get("{model_name}").call("{serviceName}", 1L)
+            );
+        }
+    }
+
+    @Test
+    void {serviceName}_success_sideEffectFieldSet() {
+        try (MockedStatic<BaseContextHandler> ctx =
+                 mockStatic(BaseContextHandler.class)) {
+
+            ctx.when(BaseContextHandler::getMeta).thenReturn(meta);
+            when(meta.get("{model_name}")).thenReturn(recordSet);
+
+            // 模拟查库返回合法前置状态
+            Map<String, Object> record = Map.of("id", 1L, "status", "DRAFT");
+            when(recordSet.call(eq("find"), any(), any(), any(), any(), any()))
+                .thenReturn(record);
+
+            // 执行服务
+            meta.get("{model_name}").call("{serviceName}", 1L);
+
+            // 验证副作用字段被写入（验证 update 被调用且包含目标字段）
+            verify(recordSet).call(eq("update"), argThat(args ->
+                args.toString().contains("status") &&
+                args.toString().contains("RELEASED")
+            ));
+        }
+    }
+}
+```
+
+### 选择哪种测试
+
+| 要测的内容 | 用哪种 |
+|---|---|
+| 状态拒绝逻辑（非法状态 → ModelException） | Mockito 单元测试 |
+| 必填参数校验（缺 id → ValidationException） | Mockito 单元测试 |
+| 副作用字段是否被赋值 | Mockito 单元测试 |
+| 数据真实写入数据库 | SieEngineTestExtension 集成测试 |
+| 跨模型 RPC 调用链路 | SieEngineTestExtension 集成测试 |
+
+---
+
+## 集成测试注意事项
 
 - `@ExtendWith(SieEngineTestExtension.class)` 需要**引擎可启动**（数据库、配置就绪），不适合纯离线 CI
-- 测试方法名建议格式：`{serviceName}_{场景}_{预期结果}`，如 `release_success_draftToReleased`
-- 依赖引擎上下文的测试在无环境时注释掉 `@Test`，保留方法体作为手动验证脚本
+- 无法启动引擎时注释掉 `@Test`，保留方法体作为手动验证脚本
+- 测试方法名格式：`{serviceName}_{场景}_{预期结果}`，如 `release_success_draftToReleased`
 - 测试文件路径：`src/test/java/com/sie/iidp/{appPkg}/{moduleName}/{ModelName}ServiceTest.java`
-- 内置服务（search/find/create/update/delete）直接用 RecordSet 对应方法；
-  自定义服务用 `.call("{serviceName}", args...)`
+- 内置服务直接用 RecordSet 对应方法；自定义服务用 `.call("{serviceName}", args...)`
 
 ---
 

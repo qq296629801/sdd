@@ -153,8 +153,8 @@
 | `active` | 是 | `true` | 是否启用 |
 | `model` | 功能菜单必填 | `"{model_name}"` | 与 Java `@Model(name)` 一致 |
 | `view` | 功能菜单必填 | `"{model_name}_grid,{model_name}_search,{model_name}_form"` | 逗号连接多个视图 key |
-| `parent_id` | 子菜单必填 | `"{appPkg}_{moduleName}_root_menu"` | 父菜单 name（推荐写法） |
-| `parent_ids` | 可选 | `{ "@ref": "父菜单name" }` | 引用式写法，复用/多父级时用 |
+| `parent_ids` | 子菜单必填 | `{ "@ref": "{appPkg}_{moduleName}_root_menu" }` | 推荐写法，引用父菜单 name |
+| `parent_id` | 可选 | `"{appPkg}_{moduleName}_root_menu"` | 直接字符串写法，不推荐 |
 
 操作栏按钮（从 §4 服务设计表提取，参照 `view.md` 按钮结构）：
 

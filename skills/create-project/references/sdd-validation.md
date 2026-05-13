@@ -52,11 +52,12 @@ Step 1.5a（backend-spec.md 生成后）立即执行 AC 提取，将 `requiremen
 - **方法名**：`submitOrder_success_draftToSubmitted()`
 - **前置条件**：数据库存在 status=DRAFT 的订单记录；当前用户有 order:submit 权限
 - **操作步骤**：
-  1. 构造入参：`{ orderId: [testId] }`
-  2. 调用 `[ServiceName].submit(meta, args)`
-  3. 查询记录状态
-- **预期结果**：记录 status 变为 SUBMITTED；无异常抛出
-- **IIDP 适配说明**：`[框架测试接入方式：待确认，可用 @SpringBootTest + Meta 注入，或 Mock IIDP 上下文]`
+  1. `@ExtendWith(SieEngineTestExtension.class)` 启动引擎上下文
+  2. `Meta meta = BaseContextHandler.getMeta()`
+  3. `meta.get("[model_name]").call("[serviceName]", [testId])`
+  4. `meta.get("[model_name]").call("find", Filter.equal("id", [testId]), ...)` 查询后置状态
+- **预期结果**：记录 status 变为目标状态；无异常抛出
+- **IIDP 适配说明**：测试模式参照 `skills/backend/references/core/testing.md`；需要引擎可启动（数据库就绪）
 - **覆盖状态**：⬜ 待执行
 ```
 

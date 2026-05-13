@@ -9,7 +9,7 @@
     ↓
 [Specify] 写功能规格：模型、页面、服务、权限、数据、验收
     ↓
-[Critique] ★ 产品战略 + 工程风险双视角批判，暂停等用户确认（可选）
+[Critique / Step 1.6] ★ 产品战略 + 工程风险双视角批判，暂停等用户确认（可选）
     ↓
 [Backend Spec] 按 sdd-backend.md 模板生成 backend-spec.md（必写）
     ↓
@@ -213,7 +213,7 @@ specs/features/
 
 ---
 
-## Step 1.5：Critique（可选，规格重大或不确定性高时触发）
+## Step 1.6：Critique（可选，规格重大或不确定性高时触发）
 
 Critique 从两个对立视角对 `requirements.md` 做批判性审查，目的是在进入实现计划前识别高风险假设和业务决策漏洞。**不修改规格，只输出发现报告并等待用户决策。**
 

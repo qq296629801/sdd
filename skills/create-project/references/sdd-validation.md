@@ -239,6 +239,129 @@ Spec Sync Prompt：
 4. 在分类完成前不要修改任何文件。
 ```
 
+### 漂移修复：propose / apply / backfill
+
+发现漂移后，**不要立即修改文件**。按三步流程完成修复闭环：
+
+```text
+propose（提方案）→ 用户审批 → apply（执行方案）
+                              ↗ 若为代码超前且无规格 → backfill（反向回填）
+```
+
+#### Step 1 — propose：生成修复提案
+
+对每条漂移，AI 输出结构化修复提案，**不执行任何文件操作**：
+
+提案格式：
+
+```markdown
+## 漂移修复提案
+
+### D-01（代码超前于规格）
+- **漂移描述**：OrderService.submit 新增了 `remark` 字段，但 requirements.md 未登记。
+- **目标文件**：`specs/features/phase1-order/requirements.md`
+- **建议变更**：在字段清单中补充 `remark: String?`（可选备注）。
+- **影响评估**：不影响其他功能；纯规格补录。
+- **操作类型**：update-spec
+
+### D-02（规格超前于代码）
+- **漂移描述**：integration-map.md 登记了 `order:export` 权限码，但 OrderService 未实现导出方法。
+- **目标文件**：`specs/features/phase1-order/tasks.md`
+- **建议变更**：新增任务 `实现 OrderService.export`，优先级 P1。
+- **操作类型**：add-task
+
+### D-03（真实冲突）
+- **漂移描述**：requirements.md 要求状态枚举为 DRAFT/SUBMITTED，代码实现为 DRAFT/PENDING/APPROVED。
+- **目标文件**：`specs/features/phase1-order/decisions.md`
+- **建议变更**：写入 ADR 说明代码三态的业务来源，以代码为准并更新规格。
+- **操作类型**：write-adr + update-spec
+- **需用户决策**：是以代码为准（三态），还是以规格为准（二态）？
+```
+
+propose Prompt：
+
+```text
+请对 [specs/features/phaseN-feature/] 漂移检测结果生成修复提案：
+1. 每条漂移输出一个提案块（D-xx）：漂移描述、目标文件、建议变更、影响评估、操作类型。
+2. 操作类型只能是：update-spec / add-task / write-adr / backfill-spec。
+3. 真实冲突类漂移必须标注「需用户决策」，并列出两个选项的影响。
+4. 不要执行任何修改；输出提案后等待用户逐条审批。
+```
+
+#### Step 2 — apply：执行已审批提案
+
+用户确认提案（逐条或批量确认）后，AI 按以下规则执行：
+
+| 操作类型 | 执行动作 | 输出 |
+|---|---|---|
+| `update-spec` | 更新 requirements.md 或 integration-map.md 对应字段 | 显示 diff，标注来源（反向提取/规格修正）|
+| `add-task` | 在 tasks.md 末尾追加任务，标注优先级和来源漂移 ID | 显示新增任务内容 |
+| `write-adr` | 在 decisions.md 追加 ADR 条目，标注以哪一侧为准 | 显示 ADR 内容 |
+| `backfill-spec` | 触发 backfill 流程（见下方）| 输出回填草稿 |
+
+执行规则：
+- 只执行已明确审批的条目；跳过「需用户决策」未决条目。
+- 每条执行完成后，在漂移登记表中标注 `✅ 已处理` 和处理时间。
+- 同一文件有多条修改时，合并为单次 Edit 操作，不多次写入。
+
+apply Prompt：
+
+```text
+以下漂移提案已审批，请依次执行（仅执行列出的 ID）：
+- [D-01]：update-spec，目标 requirements.md
+- [D-03]：write-adr，以代码三态为准
+
+执行规则：
+1. 按操作类型执行，不扩大范围。
+2. 显示每条操作的 diff 或新增内容。
+3. 执行完成后更新漂移登记表，标注「✅ 已处理」。
+4. 未审批的条目（如 D-02）跳过，不操作。
+```
+
+#### Step 3 — backfill：代码超前时反向回填规格
+
+当某个模块完全没有规格（存量项目接入或早期开发未写 spec），使用 backfill 从代码反向生成规格草稿：
+
+**触发条件**：
+- 能力分层结果中存在「自定义扩展（技术债）」条目。
+- 漂移检测发现代码实现有 5 条以上无规格对应。
+- 用户明确要求补写规格。
+
+**回填输出**：生成草稿片段，插入对应规格文件，**全部标注 `[反向提取，待确认]`**：
+
+```markdown
+<!-- backfill: 以下内容由代码反向提取，须人工核对后去除标注 -->
+
+### 模型字段（反向提取，待确认）
+| 字段名 | Java 类型 | 必填 | 来源 |
+|---|---|---|---|
+| orderNo | String | 是 | OrderModel.java:@Property(name="orderNo") |
+| remark | String | 否 | OrderModel.java:@Property(name="remark") |
+
+### 服务契约（反向提取，待确认）
+| 服务名 | auth | 入参 | 来源 |
+|---|---|---|---|
+| submit | order:submit | orderId: Long | OrderService.java:@MethodService |
+```
+
+backfill Prompt：
+
+```text
+请对 [模块路径/Java 类] 做规格反向回填：
+1. 从 @Model、@Property 提取字段清单（字段名、类型、必填、注解原文）。
+2. 从 @MethodService 提取服务契约（方法名、auth、核心入参、返回类型）。
+3. 从 views/*.json 提取视图 key、按钮 service 和权限码。
+4. 从前端扩展文件提取 selector、hook 路径、数据源名。
+5. 所有输出条目标注 [反向提取，待确认] 和来源文件行号。
+6. 输出格式为可直接粘贴到 requirements.md / integration-map.md 的 Markdown 片段。
+7. 不修改任何文件；输出草稿等待用户确认后再执行 apply。
+```
+
+**回填后的必要动作**：
+- 用户确认回填草稿后，执行 `apply` 写入规格文件。
+- 在 decisions.md 记录回填来源、确认人和确认时间。
+- 回填完成后运行完整漂移检测，确认无残留「代码超前于规格」条目。
+
 ---
 
 ## PR Bridge：从规格自动生成 PR 描述

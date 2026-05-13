@@ -20,8 +20,8 @@
 | `sdd-frontend.md` | IIDP 前端**技术落地**规格模板：节点树、selector、`ds_config`、绑定、事件、commands、hook；读完后按 `SKILL.md` 前端子 skill 路由规则继续执行 | 已知实现方式，需要输出节点/绑定/事件技术细节时；从需求生成规格时先走 `iidp-frontend-spec-doc` |
 | `sdd-frontend-interaction.md` | 前端交互设计规格模板：用户流程、节点层级、状态表、响应式、可访问性、验收标准；产物为 `interaction-spec.md`（触发条件见 `sdd-workflow.md` Step 1.5c） | 页面含复杂状态机、响应式策略、可访问性要求或危险操作时生成 `interaction-spec.md` |
 | `sdd-contracts.md` | 前后端契约：JSON-RPC、Filter、按钮服务、节点 id、节点属性与事件 | 生成契约表、接口参数、视图按钮或节点扩展契约 |
-| `sdd-validation.md` | 实现顺序、后端/前端验证、偏差处理、失败分类、阶段复盘、Spec Sync 漂移检测、PR Bridge PR 描述生成、CHANGELOG | 验证交付、处理失败、阶段复盘、漂移检测、生成 PR 描述 |
-| `sdd-brownfield.md` | 存量项目接入：侦察、契约提取、增量规格 | 接入或改造已有 IIDP 项目 |
+| `sdd-validation.md` | 实现顺序、后端/前端验证、偏差处理、失败分类、阶段复盘、Spec Sync 漂移检测（含 propose/apply/backfill 修复流程）、PR Bridge PR 描述生成、CHANGELOG | 验证交付、处理失败、阶段复盘、漂移检测与修复闭环、生成 PR 描述 |
+| `sdd-brownfield.md` | 存量项目接入：侦察、契约提取、增量规格；EDCR 能力发现框架（Evidence→Discovery→Capabilities→Risk）；IIDP 威胁矩阵（STRIDE 适配）；风险优先级与 Phase 门控 | 接入或改造已有 IIDP 项目；需要能力发现、风险建模或技术债评估时 |
 | `usage.md` | create-project 详细使用说明、输入输出、Prompt、质量检查、常见误用 | 用户询问“怎么用 create-project”或需要完整操作指南时 |
 | `sdd-skill-maintenance.md` | `create-project` skill 维护规则、文件结构、校验命令 | 修改本 skill 或检查是否符合 skill 规范 |
 | `sdd-prompts-tools-principles.md` | Prompt 速查、工具命令、核心原则、常见陷阱 | 用户要提示词、工具清单、原则或总览时 |

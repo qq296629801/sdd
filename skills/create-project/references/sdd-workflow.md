@@ -157,6 +157,11 @@ specs/features/
 ```markdown
 # 任务清单：[功能名称]
 
+## Git·分支准备（每个 feature 执行一次，写代码前必须完成）
+- [ ] [S] 确认当前所在分支：`git branch --show-current`
+- [ ] [S] 从主干创建 feature 分支：`git checkout -b feature/{appName}/phase{N}-{feature-name}`
+- [ ] [S] 确认切换成功后再开始任何文件改动
+
 ## 后端·工程基础（只做一次）
 - [ ] [S] 确认所有模型命名：appName、appPkg、moduleName、各 model_name、菜单 key
 - [ ] [M] 新增或修改业务模块 POM

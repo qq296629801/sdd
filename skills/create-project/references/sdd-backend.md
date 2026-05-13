@@ -43,6 +43,20 @@
 - 选项、字典、关联字段用 `@Selection`、`@Dict` 或 ORM 注解。
 - 唯一编码、外键、高频过滤字段和排序字段要考虑索引。
 
+**跨 App 外部模型引用（弱引用 + 冗余字段模式）**：
+
+当需要引用其他 App 的模型（如产品、工作中心、组织）且不做强依赖时，使用此模式：
+
+| 字段 | 类型 | 注解 | 说明 |
+|---|---|---|---|
+| `[externalId]` | `Long` | `@Property(displayName="[外部对象]ID")` | 存外部模型主键，弱引用 |
+| `[externalName]` | `String` | `@Property(displayName="[外部对象]名称")` | 创建/编辑时从外部接口冗余，防止外部改名影响本表 |
+| `[externalCode]` | `String` | `@Property(displayName="[外部对象]编码")` | 同上，按需冗余 |
+
+- `app.json` 中声明 `"depends": [{"app": "[外部 appName]", "type": "weak"}]`
+- `create`/`update` 服务负责读取外部数据并写入冗余字段；若外部服务不可用，要求调用方显式传入冗余字段
+- 不使用 IIDP `@ManyToOne` 跨 App 关联（会引入强依赖）
+
 ## 4. 服务设计
 
 | 服务 | 类型 | Java 方法 | 入参 | 出参 | 权限 | 说明 |
@@ -55,6 +69,20 @@
 - 自定义服务通过 `@MethodService` 暴露。
 - 写服务必须校验状态、权限、作用域和必填参数。
 - 原生 SQL 只在必要时使用，必须参数化。
+
+**状态机服务（多服务状态流转）**：
+
+业务对象有多个状态且每个流转对应独立操作时，为每个流转定义独立的 `@MethodService`，不合并为通用 `changeStatus`：
+
+| 服务 | 类型 | 前置状态 | 后置状态 | 入参 | 权限 | 说明 |
+|---|---|---|---|---|---|---|
+| `[action1]` | 自定义 | `[FROM_STATE]` | `[TO_STATE]` | `id: Long` | `{model_name}:[action1]` | 校验：id 非空、当前状态为 FROM_STATE、有权限、有 scope |
+| `[action2]` | 自定义 | `[TO_STATE]` | `[NEXT_STATE]` | `id: Long` | `{model_name}:[action2]` | 同上；如需记录时间戳，服务内赋值系统时间 |
+
+- 每个状态变更服务：**先查库当前状态 → 状态不符合抛 `ModelException`**（IIDP 请求级事务自动回滚）
+- 不加 `version` 乐观锁字段；并发状态变更由服务内状态校验兜底
+- `@MethodService(name="[action]", displayName="[中文操作名]", auth="{model_name}:[action]")`
+- 视图按钮 `service` 字段使用 `@MethodService.name`，不使用 Java 方法名
 
 ## 5. 视图和菜单
 
@@ -81,6 +109,17 @@
 | [自定义操作] | `[serviceName]` | `{model_name}:[auth]` | 行操作（buttons） |
 
 > **规则**：`service` 值必须与 §4 `@MethodService(name=...)` 或内置服务名完全一致；`auth` 值在同一 grid 视图内必须唯一；tbar 放全局操作（新增），buttons 放行级操作（编辑/删除/自定义）。
+
+**前端实现决策（详情页）**：
+
+| 详情页需求 | Phase 1 处理方式 | Phase 2 处理方式 |
+|---|---|---|
+| 标准字段查看/编辑 | IIDP 标准 form 视图，无需前端代码 | — |
+| 状态步骤条（步骤条组件） | 标记为 Phase 2，Phase 1 用状态字段 Tag 代替 | 前端扩展视图插入步骤条节点 |
+| 左右分栏布局 + 操作日志 | 标记为 Phase 2 | 扩展视图或自定义 Vue2 组件 |
+| 内联编辑/只读切换（行内 toggle） | 标记为 Phase 2 | hook 控制字段 `disabled` 状态 |
+
+> 遇到复杂详情页布局时，先在 backend-spec.md §5 末尾添加"**附：遗留问题（Phase 2）**"表格记录，不在 Phase 1 规格中展开，避免规格超出交付范围。
 
 ## 6. 数据和权限
 

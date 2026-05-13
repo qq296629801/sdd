@@ -101,6 +101,11 @@ DRAFT ──release──> RELEASED ──startWork──> IN_PROGRESS ──com
     "service": "search",
     "tag": "master",
     "app": "sie-iidp-demo-{appName}",
+    "context": {
+      "uid": "",
+      "lang": "zh_CN"
+    },
+    "useDisplayForModel": true,
     "args": {
       "filter": [["status", "=", "ENABLE"]],
       "properties": ["id", "name"],
@@ -112,12 +117,41 @@ DRAFT ──release──> RELEASED ──startWork──> IN_PROGRESS ──com
 }
 ```
 
+| 参数 | 说明 |
+|---|---|
+| `params.context.uid/lang` | 用户和语言上下文 |
+| `params.useDisplayForModel` | `true` 时 ManyToOne/Selection/Dict 返回显示值而非原始值 |
+| `args.valuesList` | create 入参（批量） |
+| `args.ids` + `args.values` | update 入参 |
+| `args.ids` | delete / read 入参 |
+| `args.filter/properties/limit/offset/order` | search / find / count 入参 |
+
+> 完整参数契约参照 `skills/backend/references/core/api-filter-sql.md` §JSON-RPC 请求结构。
+
 ## Filter 规则
 
-- 单条件：`[["name", "=", "ABC"]]`
-- 关系字段：`[["org.parent.name", "like", "%华南%"]]`
-- 逻辑符：`|`、`&`、`!`
-- 常用操作符：`= != > >= < <= like ilike not like not ilike in not in child_of parent_of`
+单条件三元组：`[["name", "=", "ABC"]]`
+
+关系字段点访问：`[["org.parent.name", "like", "%华南%"]]`
+
+混合逻辑（前缀波兰表达式）：
+
+```json
+["&", ["state", "=", "RELEASED"], ["|", ["userId", "=", "1000"], ["userId", "=", false]]]
+```
+
+常用操作符：
+
+| 操作符 | 说明 |
+|---|---|
+| `=` `!=` `>` `>=` `<` `<=` | 比较 |
+| `like` / `ilike` | 模糊；`ilike` 忽略大小写 |
+| `not like` / `not ilike` | 反向模糊 |
+| `in` / `not in` | 在列表中 |
+| `child_of` / `parent_of` | **仅用于树或父子关系模型**；普通模型不支持 |
+
+逻辑符：`|`（OR，二元）、`&`（AND，二元，省略时默认 AND）、`!`（NOT，单目）
+
 - 自定义查询服务必须继续支持平台 Filter、分页、排序和字段选择。
 
 ## 按钮与服务契约

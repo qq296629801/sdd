@@ -32,9 +32,14 @@
 
 ## 3. 模型设计
 
-| 字段 | 类型 | IIDP 注解 | 必填 | 校验 | 索引 | 说明 |
+| 字段 | Java 类型 | @Property 关键参数 | 必填 | @Validate 校验 | 索引 | 说明 |
 |---|---|---|---|---|---|---|
-| `[fieldName]` | `[String/Date/...]` | `@Property` | 是/否 | `@Validate` | 是/否 | [说明] |
+| `[fieldName]` | `String/Long/Integer/Boolean/Date` | `displayName="[中文名]"` | 是/否 | `required/length/unique` | 是/否 | [说明] |
+| `[dictField]` | `String` | `displayName="[中文名]", widget="select"` | 是/否 | — | 否 | 配合 `@Selection` 或 `@Dict` |
+| `[dateField]` | `Date` | `displayName="[中文名]", dataType=DataType.DateTime, dateFormat="yyyy-MM-dd HH:mm:ss"` | 否 | — | 否 | 日期字段必须指定 dataType 和 dateFormat |
+| `[erField]` | ManyToOne | `@ManyToOne` + `@JoinColumn(name="[col]")` | 是/否 | — | 是 | 同 App ER 关联 |
+
+> 详细 @Property 参数（`store`、`readonly`、`computeMethod`、`defaultMethod`、`contentType`、`multiple` 等）和高级 ER 指令参照 `skills/backend/references/core/model.md` 和 `model-property-advanced.md`。
 
 模型规则：
 - 模型类使用 `@StaticVar @Getter @Setter @Model`，需要日志时加 `@Slf4j`。
@@ -59,13 +64,13 @@
 
 ## 4. 服务设计
 
-| 服务 | 类型 | Java 方法 | 入参 | 出参 | 权限 | 副作用 | 说明 |
-|---|---|---|---|---|---|---|---|
-| `search` | 内置 | `search` | `Filter/properties/limit/offset/order` | 列表 | `{model_name}:read` | 无 | 保留平台契约 |
-| `create` | 内置/重写 | `create` | `[业务字段]` | `[ModelName]` | `{model_name}:create` | 写入主表 | [说明] |
-| `update` | 内置/重写 | `update` | `id + [可编辑字段]` | `[ModelName]` | `{model_name}:update` | 更新主表 | [说明] |
-| `delete` | 内置/重写 | `delete` | `id` | 无 | `{model_name}:delete` | 软删除 | [说明] |
-| `[serviceName]` | 自定义 | `[methodName]` | `[args]` | `[result]` | `{model_name}:[auth]` | [副作用] | [说明] |
+| 服务 | 类型 | Java 方法签名 | 出参 | 权限 | 副作用 | 说明 |
+|---|---|---|---|---|---|---|
+| `search` | 内置 | `search(Filter, List<String> properties, int limit, int offset, String order)` | 列表 | `{model_name}:read` | 无 | 保留平台契约 |
+| `create` | 内置/重写 | `create(List<Map<String,Object>> valuesList)` | `[ModelName]` | `{model_name}:create` | 写入主表 | [说明] |
+| `update` | 内置/重写 | `update(RecordSet rs, Map<String,Object> values)` 或 `update(List<Map<String,Object>> valuesList)` | `[ModelName]` | `{model_name}:update` | 更新主表 | [说明] |
+| `delete` | 内置/重写 | `delete(RecordSet rs)` | 无 | `{model_name}:delete` | 软删除 | [说明] |
+| `[serviceName]` | 自定义 `@MethodService` | `[methodName](RecordSet rs, [业务入参...])` | `[result]` | `{model_name}:[auth]` | [副作用] | [说明] |
 
 > **副作用列**：列出服务执行成功后自动写入的字段、生成的关联记录、外部调用等。失败时由 IIDP 请求级事务统一回滚（见事务决策树）。
 
@@ -120,29 +125,48 @@
 
 ## 5. 视图和菜单
 
-| 视图 key | 类型 | 说明 |
+视图 JSON 公共结构（每个视图必须包含，参照 `skills/backend/references/core/view.md`）：
+
+| 字段 | 值 | 说明 |
 |---|---|---|
-| `{model_name}_grid` | grid | 列表 |
-| `{model_name}_search` | search | 搜索 |
-| `{model_name}_form` | form | 表单 |
+| `mode` | `"primary"` / `"extension"` | 普通视图用 `primary`；扩展视图用 `extension` |
+| `name` | `"[中文名]"` | 权限点和页面显示名 |
+| `model` | `"{model_name}"` | 与 Java `@Model(name)` 完全一致 |
+| `type` | `"grid"` / `"search"` / `"form"` / `"tree"` | 视图主体类型 |
+| `body.type` | 同 `type` | 与外层 type 保持一致 |
 
-菜单：
-- 菜单文件：`data/menus.json`
-- 菜单 key：
-- `model`：
-- `view`：`{model_name}_grid,{model_name}_search,{model_name}_form`
-- `parent_id`：
+标准三视图 key：
 
-操作栏按钮（从 §4 服务设计按钮权限列提取）：
-
-| 按钮 | service | auth | 位置 |
+| 视图 key | type | mode | 说明 |
 |---|---|---|---|
-| 新增 | `create` | `{model_name}:create` | tbar（工具栏） |
-| 编辑 | `update` | `{model_name}:update` | 行操作（buttons） |
-| 删除 | `delete` | `{model_name}:delete` | 行操作（buttons） |
-| [自定义操作] | `[serviceName]` | `{model_name}:[auth]` | 行操作（buttons） |
+| `{model_name}_grid` | `grid` | `primary` | 列表 |
+| `{model_name}_search` | `search` | `primary` | 搜索 |
+| `{model_name}_form` | `form` | `primary` | 表单 |
 
-> **规则**：`service` 值必须与 §4 `@MethodService(name=...)` 或内置服务名完全一致；`auth` 值在同一 grid 视图内必须唯一；tbar 放全局操作（新增），buttons 放行级操作（编辑/删除/自定义）。
+菜单（参照 `skills/backend/references/core/menu.md`）：
+
+| 字段 | 必填 | 值 | 说明 |
+|---|---|---|---|
+| `name`（key） | 是 | `{appPkg}_{entity}_menu` | 全局唯一，建议以 appPkg 开头 |
+| `display_name` | 是 | `"[功能中文名]"` | 菜单显示名 |
+| `sequence` | 是 | 数字 | 同级排序，数字越小越靠前 |
+| `active` | 是 | `true` | 是否启用 |
+| `model` | 功能菜单必填 | `"{model_name}"` | 与 Java `@Model(name)` 一致 |
+| `view` | 功能菜单必填 | `"{model_name}_grid,{model_name}_search,{model_name}_form"` | 逗号连接多个视图 key |
+| `parent_id` | 子菜单必填 | `"{appPkg}_{moduleName}_root_menu"` | 父菜单 name（推荐写法） |
+| `parent_ids` | 可选 | `{ "@ref": "父菜单name" }` | 引用式写法，复用/多父级时用 |
+
+操作栏按钮（从 §4 服务设计表提取，参照 `view.md` 按钮结构）：
+
+| 按钮 | action | service | auth | 位置 |
+|---|---|---|---|---|
+| 新增 | `create` | —（内置，无需 service） | `create` | tbar |
+| 删除 | `delete` | —（内置，无需 service） | `delete` | tbar |
+| 详情 | `preview` | —（内置，无需 service） | `read` | buttons（行操作） |
+| 编辑 | `edit` | —（内置，无需 service） | `update` | buttons（行操作） |
+| [自定义操作] | `[自定义 action]` | `[serviceName]` | `{model_name}:[auth]` | tbar 或 buttons |
+
+> **规则**：内置操作（create/delete/preview/edit）只需 `action` + `auth`，不写 `service`；自定义操作必须同时有 `action`、`service`、`auth`，其中 `service` 值必须与 §4 `@MethodService(name=...)` 完全一致。`auth` 值在同一视图内必须唯一。
 
 **前端实现决策（详情页）**：
 
@@ -157,9 +181,16 @@
 
 ## 6. 数据和权限
 
-- 种子数据：
+- 种子数据（格式参照 `skills/backend/references/core/seed-data.md`）：
+  - 文件：`data/{model_name}.json`
+  - 结构：`{ "data": { "{seed_key}": { "model": "{model_name}", "isGlobal": true/false, "policy": "never/always", "properties": {...} } } }`
+  - ER 外键：`{ "@ref": "seed_key" }`；跨 App：`{ "@ref": "[appPkg].[seed_key]" }`
 - 字典：
+  - 文件：`data/{model_name}_dict.json`
+  - 结构：`{ "dicts": { "{typeCode}": { "typeName": "...", "items": [{ "itemName": "...", "itemValue": "..." }] } } }`
 - 附件：
+  - 文件索引：`data/file/{file_key}.json`；实际文件：`file/document/{path}`
+  - 种子引用：`{ "@fileId": "{file_key}" }` / `{ "@fileUrl": "{file_key}" }`
 - **权限码汇总**（从 §4 服务设计表的 `权限` 列聚合，格式 `{model_name}:{action}`）：
   - 菜单权限：`{model_name}:read`
   - 按钮/服务权限：`{model_name}:create` / `{model_name}:update` / `{model_name}:delete` / `[自定义 auth]`
@@ -219,7 +250,7 @@
 | 核查项 | 标准（来自 method-service.md） | 确认 |
 |---|---|---|
 | 注解 name 与视图 service 一致 | `@MethodService(name="[serviceName]")` 中的 `name` 值 == 视图 button `"service": "[serviceName]"` | ✅/❌ |
-| 方法签名与服务类型匹配 | 重写 create → `(List<Map<String,Object>> valuesList)`；业务方法 → `(RecordSet rs, [业务入参])`；计算字段 → `(Map<String,Object> valMap)` | ✅/❌ |
+| 方法签名与服务类型匹配 | 重写 create → `(List<Map<String,Object>> valuesList)`；重写 update → `(RecordSet rs, Map<String,Object> values)` 或 `(List<Map<String,Object>> valuesList)`；业务方法 → `(RecordSet rs, [业务入参])`；计算字段 → `(Map<String,Object> valMap)` | ✅/❌ |
 | 异常处理结构正确 | `catch (ModelException\|ValidationException e){throw e;}` + `catch(Exception e){throw new ValidationException("...")}` | ✅/❌ |
 | §4 副作用字段全部赋值 | §4 服务行"副作用"列声明的字段，在方法体中能找到对应赋值语句 | ✅/❌ |
 

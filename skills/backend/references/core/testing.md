@@ -150,62 +150,114 @@ void testAsync() {
 
 > `mockito-inline` 包含 `mockito-core`，不重复引入。Java 8 使用 Mockito 4.x；Java 11+ 可用 5.x。
 
-### 状态机服务单元测试
+### 模式 A：服务接收 RecordSet 入参（直接调用 Java 方法）
+
+适用于签名为 `methodName(RecordSet rs, ...)` 的 `@MethodService`，可直接传入 mock RecordSet，无需 mock 静态方法：
+
+```java
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+class {ModelName}ServiceUnitTest {
+
+    // 被测模型类实例（直接 new，不走 IIDP 引擎）
+    private final {ModelName} service = new {ModelName}();
+
+    @Mock
+    private RecordSet rs;
+
+    @Test
+    void {serviceName}_success() {
+        // 准备：mock RecordSet 内部调用
+        when(rs.getIds()).thenReturn(new String[]{"1"});
+        when(rs.callSuper(null, MethodConst.FIND, any(), any(), any(), any()))
+            .thenReturn(rs);
+        when(rs.any()).thenReturn(true);
+
+        // 执行
+        boolean result = service.{serviceName}(rs, "TARGET_STATUS");
+
+        // 验证副作用：update 被调用，且包含目标字段
+        verify(rs).callSuper(eq(null), eq(MethodConst.UPDATE),
+            argThat(val -> ((Map<?, ?>) val).get("status").equals("TARGET_STATUS")));
+        assertTrue(result);
+    }
+
+    @Test
+    void {serviceName}_reject_emptyRecordSet() {
+        when(rs.any()).thenReturn(false);
+
+        assertThrows(ValidationException.class, () ->
+            service.{serviceName}(rs, "TARGET_STATUS"));
+    }
+}
+```
+
+### 模式 B：服务内部调用 `BaseContextHandler.getMeta()`（状态机服务）
+
+适用于签名为 `methodName(Long id)` 或无 RecordSet 入参的 `@MethodService`，
+需用 `MockedStatic` mock 静态方法：
 
 ```java
 import org.mockito.MockedStatic;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class {ModelName}ServiceUnitTest {
+class {ModelName}StateServiceUnitTest {
+
+    private final {ModelName} service = new {ModelName}();
 
     @Mock
     private Meta meta;
 
     @Mock
-    private RecordSet recordSet;
+    private RecordSet rs;
 
     @Test
     void {serviceName}_reject_illegalStatus() {
         try (MockedStatic<BaseContextHandler> ctx =
                  mockStatic(BaseContextHandler.class)) {
 
+            // mock 静态入口
             ctx.when(BaseContextHandler::getMeta).thenReturn(meta);
-            when(meta.get("{model_name}")).thenReturn(recordSet);
+            when(meta.get(anyString())).thenReturn(rs);
 
-            // 模拟查库返回非法前置状态的记录
-            Map<String, Object> record = Map.of("id", 1L, "status", "RELEASED");
-            when(recordSet.call(eq("find"), any(), any(), any(), any(), any()))
-                .thenReturn(record);
+            // 模拟查库返回非法前置状态
+            List<Map<String, Object>> records =
+                List.of(Map.of("id", 1L, "status", "RELEASED"));
+            when(rs.callSuper(null, MethodConst.FIND, any(), any(), any(), any()))
+                .thenReturn(records);
 
-            // 预期抛出 ModelException
+            // 预期：状态不符合 → ModelException
             assertThrows(ModelException.class, () ->
-                meta.get("{model_name}").call("{serviceName}", 1L)
-            );
+                service.{serviceName}(1L));
         }
     }
 
     @Test
-    void {serviceName}_success_sideEffectFieldSet() {
+    void {serviceName}_success_statusUpdated() {
         try (MockedStatic<BaseContextHandler> ctx =
                  mockStatic(BaseContextHandler.class)) {
 
             ctx.when(BaseContextHandler::getMeta).thenReturn(meta);
-            when(meta.get("{model_name}")).thenReturn(recordSet);
+            when(meta.get(anyString())).thenReturn(rs);
 
             // 模拟查库返回合法前置状态
-            Map<String, Object> record = Map.of("id", 1L, "status", "DRAFT");
-            when(recordSet.call(eq("find"), any(), any(), any(), any(), any()))
-                .thenReturn(record);
+            List<Map<String, Object>> records =
+                List.of(Map.of("id", 1L, "status", "DRAFT"));
+            when(rs.callSuper(null, MethodConst.FIND, any(), any(), any(), any()))
+                .thenReturn(records);
 
-            // 执行服务
-            meta.get("{model_name}").call("{serviceName}", 1L);
+            // 执行
+            service.{serviceName}(1L);
 
-            // 验证副作用字段被写入（验证 update 被调用且包含目标字段）
-            verify(recordSet).call(eq("update"), argThat(args ->
-                args.toString().contains("status") &&
-                args.toString().contains("RELEASED")
-            ));
+            // 验证后置状态字段被写入
+            verify(rs).callSuper(eq(null), eq(MethodConst.UPDATE),
+                argThat(val -> ((Map<?, ?>) val).get("status").equals("RELEASED")));
         }
     }
 }
@@ -213,13 +265,13 @@ class {ModelName}ServiceUnitTest {
 
 ### 选择哪种测试
 
-| 要测的内容 | 用哪种 |
-|---|---|
-| 状态拒绝逻辑（非法状态 → ModelException） | Mockito 单元测试 |
-| 必填参数校验（缺 id → ValidationException） | Mockito 单元测试 |
-| 副作用字段是否被赋值 | Mockito 单元测试 |
-| 数据真实写入数据库 | SieEngineTestExtension 集成测试 |
-| 跨模型 RPC 调用链路 | SieEngineTestExtension 集成测试 |
+| 要测的内容 | 用哪种 | Mockito 模式 |
+|---|---|---|
+| 状态拒绝逻辑（非法状态 → ModelException） | Mockito | 模式 B |
+| 必填参数校验（缺 id → ValidationException） | Mockito | 模式 A 或 B |
+| 副作用字段是否被 update 写入 | Mockito | 模式 A 或 B |
+| 数据真实写入数据库 | SieEngineTestExtension | — |
+| 跨模型 RPC 调用链路 | SieEngineTestExtension | — |
 
 ---
 

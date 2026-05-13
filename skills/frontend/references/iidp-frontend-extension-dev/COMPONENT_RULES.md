@@ -337,6 +337,14 @@ export default {
 - 如果只是复用一段 IIDP 视图配置，不需要写 Vue 组件，优先使用 `custom-view-component`。
 - **扩展视图 JS 文件（`views/` 目录下的 `.js` 文件）禁止直接 import Vue 组件（`.vue` 文件）。** 组件注册只在 `comps.js` 中完成，扩展视图通过 `type` 引用已注册的组件。Vue 组件之间的父子引用在 `.vue` 文件内部的 `components` 选项中完成。
 
+> **常见错误**：扩展视图中 `type` 写成 `comps.js` 的 export 变量名（如 `TraceForwardPage`）或直接抄规格文档中的大写名称。正确做法是取组件 `name` 去掉 `tech-` 前缀（如 `trace-forward-page`）。三个值的对应关系：
+>
+> | 来源 | 示例值 | 用途 |
+> |------|--------|------|
+> | 组件 `name` 属性 | `tech-trace-forward-page` | 组件声明、comps.js 注册 |
+> | comps.js export 变量名 | `TraceForwardPage` | 仅用于 JS 模块注册，**不用于**视图 type |
+> | 扩展视图 `type` | `trace-forward-page` | 视图配置中引用组件 |
+
 ### 组件目录结构
 
 当需求涉及多个自定义 Vue 组件时，**必须按页面/业务模块建立文件夹层级**，禁止将所有组件文件平铺在 `apps/component` 根目录下。

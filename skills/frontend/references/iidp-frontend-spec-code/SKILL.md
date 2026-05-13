@@ -169,6 +169,7 @@ description: Use when generating IIDP frontend code from an IIDP frontend implem
 3. **使用内置方法**：数组查找用 `indexOf`/`includes`/`find`，不手写等价 for 循环；字符串拼接用模板字面量。
 4. **文件长度**：预估生成代码超过 400 行时，主动按业务功能拆分为独立扩展文件，由 `views/index.js` 汇总导出。
 5. **HTML 安全**：动态内容拼接 HTML 时已做转义处理。
+6. **扩展视图 type 与组件 name 一致**：涉及自定义 Vue2 组件时，扩展视图的 `view.type` 必须等于组件 `name` 属性去掉 `tech-` 前缀后的值（kebab-case），**不是** `comps.js` 中的 export 变量名。例如组件声明 `name: 'tech-trace-forward-page'`，则扩展视图 `type` 应为 `'trace-forward-page'`，不是 `'TraceForwardPage'`。
 
 ## 验证
 

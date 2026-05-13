@@ -9,11 +9,13 @@
     ↓
 [Specify] 写功能规格：模型、页面、服务、权限、数据、验收
     ↓
-[Critique] ★ 产品战略 + 工程风险双视角批判，暂停等用户确认（可选）
+[Critique / Step 1.6] ★ 产品战略 + 工程风险双视角批判，暂停等用户确认（可选）
     ↓
 [Backend Spec] 按 sdd-backend.md 模板生成 backend-spec.md（必写）
     ↓
 [Frontend Spec] 需要前端代码？→ 按 sdd-frontend.md 模板生成 frontend-spec.md；标准模板页面跳过
+    ↓
+[Interaction Spec] 含复杂状态/响应式/可访问性？→ 按 sdd-frontend-interaction.md 模板生成 interaction-spec.md
     ↓
 [Plan] 生成实现计划：后端优先，前端按实现分支决策
     ↓
@@ -94,7 +96,8 @@ specs/features/
 └── phase1-[feature-name]/
     ├── requirements.md         # 功能需求与契约
     ├── backend-spec.md         # 后端技术落地规格（命名、模型、服务、视图、菜单、权限）
-    ├── frontend-spec.md        # 前端技术落地规格（仅需要前端代码时生成，标准模板页面跳过）
+    ├── frontend-spec.md        # 前端技术落地规格（仅需要前端代码时生成）
+    ├── interaction-spec.md     # 前端交互规格（含复杂状态/响应式/可访问性时生成）
     ├── plan.md
     ├── tasks.md
     └── validation.md
@@ -177,7 +180,40 @@ specs/features/
 
 **`backend-spec.md` 和 `frontend-spec.md` 是 Step 4 实现阶段子 skill 的输入。** 缺失时必须先补全再进入实现。
 
-## Step 1.5：Critique（可选，规格重大或不确定性高时触发）
+### Step 1.5c：Interaction Spec（条件生成）
+
+**触发条件**：满足以下任一时生成，否则跳过：
+- 页面含复杂状态机（超过 3 个状态且有状态转移动作）
+- 需要明确响应式布局策略（弹窗滚动、表格高度、栅格列宽）
+- 有可访问性要求（WCAG、键盘操作、屏幕阅读器）
+- 含批量操作、危险操作确认或多步向导流程
+
+读取 `sdd-frontend-interaction.md` 模板，输出 `interaction-spec.md`，必须包含：
+
+| 章节 | 内容 | 对应 sdd-frontend-interaction.md 章节 |
+|---|---|---|
+| 页面目标 | 目标用户、核心任务、推荐实现方式 | §1 |
+| 用户流程 | 进入→操作→成功/失败完整路径 | §2 |
+| IIDP 节点层级 | 页面节点树（page > container > 子节点） | §3 |
+| 交互状态表 | 每个节点的 default/loading/empty/error/disabled 及触发条件 | §4 |
+| 节点属性与数据契约 | id 来源、selector、ds_config、bind_on_、hook | §5 |
+| 响应式与容器策略 | 栅格、弹窗尺寸、滚动归属、TABIFRAME | §6 |
+| 可访问性与可用性 | label、必填标识、错误文字、危险操作确认 | §7 |
+| 验收标准 | 可操作、可验证、可追踪的检查项 | §8 |
+
+`interaction-spec.md` 与 `frontend-spec.md` **不重复输出**：节点 id / selector / ds_config 等技术细节写在 `frontend-spec.md`，交互状态表、用户流程、响应式策略写在 `interaction-spec.md`。
+
+**三个技术规格文件总结：**
+
+| 文件 | 来源模板 | 生成条件 | Step 4 读取方 |
+|---|---|---|---|
+| `backend-spec.md` | `sdd-backend.md` | 必须生成 | backend skill |
+| `frontend-spec.md` | `sdd-frontend.md` | 需要前端代码时 | frontend skill |
+| `interaction-spec.md` | `sdd-frontend-interaction.md` | 含复杂状态/响应式/可访问性时 | frontend skill |
+
+---
+
+## Step 1.6：Critique（可选，规格重大或不确定性高时触发）
 
 Critique 从两个对立视角对 `requirements.md` 做批判性审查，目的是在进入实现计划前识别高风险假设和业务决策漏洞。**不修改规格，只输出发现报告并等待用户决策。**
 

@@ -18,7 +18,7 @@
 | `sdd-workflow.md` | 规格层次、功能迭代闭环、能力识别、Critique、Plan Review Gate、Blueprint、计划、任务、验收目录 | 生成 requirements/plan/tasks/validation，或解释 SDD 流程 |
 | `sdd-backend.md` | IIDP 后端规格模板：命名、工程文件、模型、服务、视图、菜单、权限、验收 | 生成或审核后端规格 |
 | `sdd-frontend.md` | IIDP 前端**技术落地**规格模板：节点树、selector、`ds_config`、绑定、事件、commands、hook；读完后按 `SKILL.md` 前端子 skill 路由规则继续执行 | 已知实现方式，需要输出节点/绑定/事件技术细节时；从需求生成规格时先走 `iidp-frontend-spec-doc` |
-| `sdd-frontend-interaction.md` | 前端交互设计规格：用户流程、节点层级、状态表、响应式、可访问性、验收标准 | 需要页面级交互状态、响应式或可访问性规格时；与 `sdd-frontend.md` 配合使用，不重复输出 |
+| `sdd-frontend-interaction.md` | 前端交互设计规格模板：用户流程、节点层级、状态表、响应式、可访问性、验收标准；产物为 `interaction-spec.md`（触发条件见 `sdd-workflow.md` Step 1.5c） | 页面含复杂状态机、响应式策略、可访问性要求或危险操作时生成 `interaction-spec.md` |
 | `sdd-contracts.md` | 前后端契约：JSON-RPC、Filter、按钮服务、节点 id、节点属性与事件 | 生成契约表、接口参数、视图按钮或节点扩展契约 |
 | `sdd-validation.md` | 实现顺序、后端/前端验证、偏差处理、失败分类、阶段复盘、Spec Sync 漂移检测、PR Bridge PR 描述生成、CHANGELOG | 验证交付、处理失败、阶段复盘、漂移检测、生成 PR 描述 |
 | `sdd-brownfield.md` | 存量项目接入：侦察、契约提取、增量规格 | 接入或改造已有 IIDP 项目 |
@@ -54,6 +54,7 @@ agents/
 │   │       ├── requirements.md
 │   │       ├── backend-spec.md       # 后端技术落地规格（模型、服务、视图、菜单、权限细节）
 │   │       ├── frontend-spec.md      # 前端技术落地规格（仅需要前端代码时生成）
+│   │       ├── interaction-spec.md   # 前端交互规格（含复杂状态/响应式/可访问性时生成）
 │   │       ├── plan.md
 │   │       ├── tasks.md
 │   │       └── validation.md

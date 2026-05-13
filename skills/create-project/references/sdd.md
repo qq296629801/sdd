@@ -15,7 +15,7 @@
 | 文件 | 内容 | 何时读取 |
 |---|---|---|
 | `sdd-constitution.md` | 核心定位、项目宪法、`mission.md`、`iidp-stack.md`、`ui-constitution.md`、`integration-map.md` | 建项、补项目宪法、补 UI 宪法、定义跨功能约束 |
-| `sdd-workflow.md` | 规格层次、功能迭代闭环、能力识别、Critique、Plan Review Gate、Blueprint、计划、任务、验收目录 | 生成 requirements/plan/tasks/validation，或解释 SDD 流程 |
+| `sdd-workflow.md` | 规格层次、功能迭代闭环、能力识别、Clarify 规格澄清（Step 1.2）、Critique、Plan Review Gate、Blueprint、计划、任务、验收目录 | 生成 requirements/plan/tasks/validation，执行规格澄清或解释 SDD 流程 |
 | `sdd-backend.md` | IIDP 后端规格模板：命名、工程文件、模型、服务、视图、菜单、权限、验收 | 生成或审核后端规格 |
 | `sdd-frontend.md` | IIDP 前端**技术落地**规格模板：节点树、selector、`ds_config`、绑定、事件、commands、hook；读完后按 `SKILL.md` 前端子 skill 路由规则继续执行 | 已知实现方式，需要输出节点/绑定/事件技术细节时；从需求生成规格时先走 `iidp-frontend-spec-doc` |
 | `sdd-frontend-interaction.md` | 前端交互设计规格模板：用户流程、节点层级、状态表、响应式、可访问性、验收标准；产物为 `interaction-spec.md`（触发条件见 `sdd-workflow.md` Step 1.5c） | 页面含复杂状态机、响应式策略、可访问性要求或危险操作时生成 `interaction-spec.md` |

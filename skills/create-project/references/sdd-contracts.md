@@ -89,6 +89,206 @@ DRAFT ──release──> RELEASED ──startWork──> IN_PROGRESS ──com
 
 ---
 
+## 内置服务详细参数契约
+
+> 来源：`skills/backend/references/core/api-filter-sql.md` §内置服务参数速查、`data-source-api.md` §内置服务契约
+
+### search / find / count
+
+**后端方法签名**：
+
+```java
+// search
+search(Filter filter, List<String> properties, int limit, int offset, String order)
+
+// count
+count(Filter filter)
+
+// find（按条件或 ID 查单条/多条）
+find(Filter filter, List<String> properties, Integer limit, Integer offset, String order)
+```
+
+**前端 ds_config / JSON-RPC args**：
+
+```js
+ds_config: {
+  type: 'meta',
+  name: 'listData',
+  autoRequest: true,
+  options: {
+    params: {
+      model: '{model_name}',
+      service: 'search',
+      tag: 'master',
+      useDisplayForModel: true,
+      args: {
+        filter: [["status", "=", "ENABLE"]],
+        properties: ["id", "name", "status"],
+        limit: 20,
+        offset: 0,
+        order: "id desc"
+      }
+    }
+  }
+}
+```
+
+| args 参数 | 类型 | 说明 |
+|---|---|---|
+| `filter` | `Array` | Filter 三元组或波兰表达式，见 §Filter 规则 |
+| `properties` | `String[]` | 返回字段列表；`["*"]` 返回全部 |
+| `limit` | `int` | 每页条数；`0` 表示不分页 |
+| `offset` | `int` | 偏移量 |
+| `order` | `String` | 排序，如 `"id desc"` |
+
+---
+
+### create
+
+**后端方法签名**：
+
+```java
+create(List<Map<String, Object>> valuesList)
+```
+
+**前端 args**：
+
+```js
+args: {
+  valuesList: [
+    { "fieldName": "value", "anotherField": "value" }
+  ]
+}
+```
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `valuesList` | `List<Map>` | 批量创建；每项为字段名→值的 Map；字段名用 Java 字段名，不用列名 |
+
+---
+
+### update
+
+**后端方法签名**：
+
+```java
+// 方式一：ids + values（推荐，批量更新）
+update(List<Map<String, Object>> valuesList)
+
+// 方式二：RecordSet + values（重写时常用）
+update(RecordSet rs, Map<String, Object> values)
+```
+
+**前端 args**：
+
+```js
+args: {
+  ids: ["id1", "id2"],
+  values: { "fieldName": "newValue" }
+}
+```
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `ids` | `String[]` | 待更新记录主键 |
+| `values` | `Map` | 要更新的字段名→值；只传变化字段，支持局部更新 |
+
+---
+
+### delete
+
+**后端方法签名**：
+
+```java
+delete(RecordSet rs)
+// 或
+delete(List<String> ids)
+```
+
+**前端 args**：
+
+```js
+args: {
+  ids: ["id1", "id2"]
+}
+```
+
+---
+
+### read（按 ID 读详情）
+
+**前端 args**：
+
+```js
+args: {
+  ids: ["id1"],
+  properties: ["id", "name", "status"]
+}
+```
+
+---
+
+### 自定义服务（@MethodService）
+
+**后端方法签名**：
+
+```java
+@MethodService(name = "[serviceName]", displayName = "[中文名]", auth = "{model_name}:[auth]")
+public [ReturnType] [methodName](RecordSet rs, [业务参数...]) { }
+```
+
+**前端按钮 args 常用变量**：
+
+| 变量 | 场景 |
+|---|---|
+| `$ds.checkedDataIds` | 表格勾选行的 ID 列表 |
+| `$ds.checkedDataList` | 表格勾选行的完整数据 |
+| `$ds.selectedTableData` | 当前选中行数据 |
+| `$table.row` | 主表格当前行 |
+| `$table.subRow` | 子表格当前行 |
+| `$form.curForm` | 主表单当前数据 |
+| `othersParams` | 动态构造参数函数 |
+
+**前端 ds_config（自定义查询服务）**：
+
+```js
+ds_config: {
+  type: 'meta',
+  name: 'customData',
+  autoRequest: false,
+  options: {
+    params: {
+      model: '{model_name}',
+      service: '[serviceName]',
+      tag: 'master',
+      args: {
+        // 与后端方法入参一一对应（RecordSet 除外）
+        "[param1]": "[value]"
+      }
+    }
+  },
+  reqPrep: (vm, options, config) => {
+    // 请求前处理：修改 options.params.args
+    return options;
+  },
+  reqAfter: (vm, res, config) => {
+    // 响应后处理：必须 return res
+    return res;
+  }
+}
+```
+
+**规则**：
+
+- `args` 字段名与 Java 方法入参名一一对应；`RecordSet rs` 由平台注入，不写在 args 里
+- `reqPrep` 修改请求参数；`reqAfter` 修改响应数据，**必须 return res**
+- `autoRequest: false` 时用 `vm.request('dataName', params?)` 手动触发
+- 自定义查询服务必须继续支持平台 Filter、分页、排序，不能改成只接收固定参数
+
+> 来源：`skills/backend/references/core/data-source-api.md` §自定义服务入参、`skills/frontend/references/iidp-frontend-dev-manual/iidpDoc/06.框架/02.数据源.md`
+
+---
+
 ## JSON-RPC 基本契约
 
 ```json

@@ -95,6 +95,8 @@
 | `[serviceName]` | 自定义 `@MethodService` | `[methodName](RecordSet rs, [业务入参...])` | `[result]` | `{model_name}:[auth]` | [副作用] | [说明] |
 
 > **副作用列**：列出服务执行成功后自动写入的字段、生成的关联记录、外部调用等。失败时由 IIDP 请求级事务统一回滚（见事务决策树）。
+>
+> **服务入参/出参详细契约**（Java 签名、前端 args、ds_config 写法）参照 `sdd-contracts.md` §内置服务详细参数契约 和 §自定义服务。
 
 服务规则：
 - 内置 CRUD 重写不得破坏平台入参契约。

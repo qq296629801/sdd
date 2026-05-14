@@ -308,6 +308,8 @@ export default {
 | `[name]` | meta/api | `[params]`        | autoRequest/手动 | [说明]   |
 
 > **约束**：所有 API 请求必须通过 IIDP 数据源或 `window.Tech.httpMeta` 发起，禁止自行引入 axios、fetch 等请求库。
+>
+> **ds_config 完整字段（type/name/autoRequest/options/reqPrep/reqAfter）、内置服务 args 结构、自定义服务 args 与前端变量（`$ds.checkedDataIds` 等）** 参照 `sdd-contracts.md` §内置服务详细参数契约 和 §自定义服务。
 
 标准数据源配置示例：
 

@@ -145,6 +145,62 @@
 
 > 跨 App 写操作补偿服务在 Phase 1 可标记"待实现"并说明原因；但补偿策略必须在 backend-spec.md 中声明，不得推到实现阶段才考虑。
 
+### 4.x 自定义服务详细设计
+
+每个自定义 `@MethodService`（以及需要重写逻辑的内置服务）必须在服务清单表之后补充以下详细设计块。纯内置 CRUD 且无额外逻辑时可省略。
+
+````markdown
+#### [serviceName]（[中文操作名]）
+
+**入参校验**：
+
+| 参数 | 类型 | 校验规则 | 不满足时 |
+|---|---|---|---|
+| `id` | `Long` | 非空 | 抛 `ValidationException("id 不能为空")` |
+| `[param]` | `[类型]` | [规则] | 抛 `ValidationException("[提示]")` |
+
+**查询逻辑**：
+
+```
+// 查主记录
+[ModelName] record = meta.get("[model_name]").find(Filter.equal("id", id), ...)
+
+// 关联查询（按需）
+// 方式一：ER 字段直接访问（已有 @ManyToOne 关联时）
+record.get[RelatedField]()
+
+// 方式二：批量 find（无 ER 或跨模型时）
+List<?> children = meta.get("[child_model]").find(
+    Filter.equal("[fk_field]", id), null, null, null, null)
+
+// 方式三：N+1 禁止，超过 1 条记录时批量查询后在内存组装
+List<Long> ids = records.stream().map(...).collect(...)
+List<?> related = meta.get("[model]").find(Filter.in("id", ids), ...)
+```
+
+**业务步骤**：
+
+1. 状态校验：`record.status != [EXPECTED_STATUS]` → 抛 `ModelException("[提示]")`
+2. 业务规则校验：[如：数量不得为负、编码不能重复]
+3. 主操作：[写入哪些字段，如 `status = SUBMITTED`、`submitTime = now()`]
+4. 关联操作：[如：批量更新子表、写入关联记录]
+5. 外部调用（如有）：[调用跨 App 服务，失败策略]
+6. 返回：[返回值说明，如更新后的记录或 void]
+
+**异常分层**：
+
+| 场景 | 异常类型 | 是否回滚 |
+|---|---|---|
+| 必填参数缺失 | `ValidationException` | 否 |
+| 前置状态不符 | `ModelException` | 是 |
+| 业务规则违反 | `ModelException` | 是 |
+| 外部服务失败 | `ModelException` | 是（补偿见上方） |
+
+**事务说明**：IIDP 请求级事务（默认）/ 分段提交（原因：[...]）
+````
+
+> **填写规则**：每个 `@MethodService` 对应一个详细设计块；顺序与服务清单表一致。查询逻辑重点说明关联方式（ER 字段 / 批量 find / 禁止 N+1），业务步骤用编号列出操作顺序，不需要写 Java 语法，伪代码即可。
+
 ## 5. 视图和菜单
 
 视图 JSON 公共结构（每个视图必须包含，参照 `skills/backend/references/core/view.md`）：

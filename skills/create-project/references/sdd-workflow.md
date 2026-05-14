@@ -226,7 +226,7 @@ specs/features/
 | 命名       | appName、appPkg、moduleName、model_name、Java 类名、菜单 key    | §1                       |
 | 工程文件   | 新增/修改文件清单（POM、app.json、视图、菜单、apps.json）       | §2                       |
 | 模型设计   | 字段、IIDP 注解、校验、索引；多模型时先写 ER 总览再逐模型展开   | §3                       |
-| 服务设计   | 内置/自定义服务、入参、出参、权限、事务边界                     | §4                       |
+| 服务设计   | 内置/自定义服务清单、入参、出参、权限、事务边界；每个自定义服务附详细设计块（入参校验、查询逻辑、业务步骤、异常分层） | §4                       |
 | 视图和菜单 | 视图 key、类型、grid/search/form 配置；菜单 key、model、view    | §5                       |
 | 数据和权限 | 种子数据、字典、菜单/按钮/服务权限码（引用 integration-map.md） | §6                       |
 | 验收       | app.json 登记、命名一致、JSON 可解析、编译                      | §7                       |

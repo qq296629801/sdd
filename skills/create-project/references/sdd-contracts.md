@@ -9,14 +9,32 @@
 
 ### 模型 1：[ModelName] (`[model_name]`)
 
-| service | 类型 | args 关键参数 | 权限码 | 前端入口 | 节点 id | 待确认 |
-|---|---|---|---|---|---|---|
-| `search` | 内置 | filter/limit/offset | `read` | grid 加载 | `{model_name}_grid` | — |
-| `[xxx]` | 自定义 | `[args]` | `[auth]` | grid 按钮 | `[id]` | — |
+| app | model | service | 类型 | args 参数（名称: 类型） | 权限码 | 前端入口 | 节点 id | 待确认 |
+|---|---|---|---|---|---|---|---|---|
+| `sie-iidp-demo-{appName}` | `{model_name}` | `search` | 内置 | 平台标准（详见 `method-service.md` §search 入参） | `read` | grid 加载 | `{model_name}_grid` | — |
+| `sie-iidp-demo-{appName}` | `{model_name}` | `create` | 内置 | 平台标准（详见 `method-service.md` §create 入参） | `create` | tbar 新增 | — | — |
+| `sie-iidp-demo-{appName}` | `{model_name}` | `update` | 内置 | 平台标准（详见 `method-service.md` §update 入参） | `update` | 行编辑 | — | — |
+| `sie-iidp-demo-{appName}` | `{model_name}` | `delete` | 内置 | 平台标准（详见 `method-service.md` §delete 入参） | `delete` | 行删除 | — | — |
+| `sie-iidp-demo-{appName}` | `{model_name}` | `[xxx]` | 自定义 | `[paramName]: [type]`，多参数用 ` / ` 分隔 | `[auth]` | grid 按钮 | `[id]` | — |
 
 ### 模型 2：[ModelName] (`[model_name]`)
 ...
 ```
+
+> **自定义服务 args 类型映射规则**（来自 `backend-spec.md` §4 Java 方法签名）：
+>
+> | Java 参数类型 | args 前端类型 | 填写示例 |
+> |---|---|---|
+> | `String` | `string` | `reason: string` |
+> | `Long` / `Integer` | `number` | `days: number` |
+> | `Boolean` | `boolean` | `force: boolean` |
+> | `List<Long>` / `Long[]` | `number[]` | `ids: number[]` |
+> | `List<String>` | `string[]` | `codes: string[]` |
+> | `Map<String,Object>` | `object` | `extra: object` |
+> | `RecordSet rs` | **不填**（平台通过 `bind_ids` 自动注入） | — |
+> | `Filter` / `int limit` 等内置参数 | **不填**（平台标准参数） | — |
+>
+> 只有 `RecordSet` 之后的业务自定义参数才写入 args 列。多个参数写法示例：方法 `batchEnable(RecordSet rs, String reason, Integer days)` → args 列填 `reason: string / days: number`。
 
 ### 跨模型服务契约表
 

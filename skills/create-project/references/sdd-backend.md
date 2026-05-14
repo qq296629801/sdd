@@ -86,61 +86,15 @@
 
 ## 4. 服务设计
 
-| 服务 | 类型 | Java 方法签名 | 出参类型 | 权限 | 副作用 | 说明 |
+| 服务 | 类型 | Java 方法签名 | 出参 | 权限 | 副作用 | 说明 |
 |---|---|---|---|---|---|---|
-| `search` | 内置 | `search(Filter, List<String> properties, int limit, int offset, String order)` | `List` | `{model_name}:read` | 无 | 保留平台契约 |
+| `search` | 内置 | `search(Filter, List<String> properties, int limit, int offset, String order)` | 列表 | `{model_name}:read` | 无 | 保留平台契约 |
 | `create` | 内置/重写 | `create(List<Map<String,Object>> valuesList)` | `[ModelName]` | `{model_name}:create` | 写入主表 | [说明] |
 | `update` | 内置/重写 | `update(RecordSet rs, Map<String,Object> values)` 或 `update(List<Map<String,Object>> valuesList)` | `[ModelName]` | `{model_name}:update` | 更新主表 | [说明] |
-| `delete` | 内置/重写 | `delete(RecordSet rs)` | `void` | `{model_name}:delete` | 软删除 | [说明] |
-| `[serviceName]` | 自定义 `@MethodService` | `[methodName](RecordSet rs, [业务入参...])` | `Boolean/Map/List/DTO` | `{model_name}:[auth]` | [副作用] | [说明] |
+| `delete` | 内置/重写 | `delete(RecordSet rs)` | 无 | `{model_name}:delete` | 软删除 | [说明] |
+| `[serviceName]` | 自定义 `@MethodService` | `[methodName](RecordSet rs, [业务入参...])` | `[result]` | `{model_name}:[auth]` | [副作用] | [说明] |
 
 > **副作用列**：列出服务执行成功后自动写入的字段、生成的关联记录、外部调用等。失败时由 IIDP 请求级事务统一回滚（见事务决策树）。
->
-> **服务入参/出参详细契约**（Java 签名、前端 args、ds_config 写法、Filter 示例、请求/响应 JSON）参照 `sdd-contracts.md` §内置服务详细参数契约、§自定义服务、§典型 Filter 场景。
-
-**自定义服务参数明细表（每个 @MethodService 必须填写）**：
-
-````markdown
-### 服务：`[serviceName]`（[中文操作名]）
-
-**入参明细**：
-
-| 参数名 | Java 类型 | JSON-RPC args 字段名 | 必填 | 校验规则 | 类型转换规则 | 说明 |
-|---|---|---|---|---|---|---|
-| `rs` | `RecordSet` | —（平台注入，不在 args 中） | — | — | — | 操作记录集 |
-| `[param1]` | `Long` | `[param1]` | 是 | `@NotNull` | JS Number → Java Long | [说明] |
-| `[param2]` | `String` | `[param2]` | 是 | `@In(["ENABLE","DISABLE"])` | 直接传字符串 | 目标状态枚举值 |
-| `[dateParam]` | `Date` | `[dateParam]` | 否 | — | `"yyyy-MM-dd HH:mm:ss"` 字符串 → Date | 注意时区 |
-
-**出参结构**：
-
-| 返回类型 | result 结构示例 | 说明 |
-|---|---|---|
-| `Boolean` | `true` / `false` | 操作是否成功 |
-| `Map<String,Object>` | `{"id":"xxx","status":"SUBMITTED"}` | 返回关键字段 |
-| `List<T>` | `[{...},{...}]` | 批量结果 |
-| `void` | `{}` | 无返回内容 |
-
-> 本服务返回：[从上方选择并填写具体结构]
-
-**前端请求示例**：
-
-```js
-// 按钮 args
-args: {
-  "bind_ids": "$ds.checkedDataIds",  // 或具体 ID
-  "[param2]": "ENABLE"
-}
-```
-
-**错误响应约定**：
-
-| 场景 | 异常类型 | error.message 示例 |
-|---|---|---|
-| 必填参数缺失 | `ValidationException` | `"[param1] 不能为空"` |
-| 状态不允许 | `ModelException` | `"当前状态不允许执行[操作名]"` |
-| 业务规则违反 | `ModelException` | `"[具体业务原因]"` |
-````
 
 服务规则：
 - 内置 CRUD 重写不得破坏平台入参契约。

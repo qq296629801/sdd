@@ -308,8 +308,6 @@ export default {
 | `[name]` | meta/api | `[params]`        | autoRequest/手动 | [说明]   |
 
 > **约束**：所有 API 请求必须通过 IIDP 数据源或 `window.Tech.httpMeta` 发起，禁止自行引入 axios、fetch 等请求库。
->
-> **ds_config 完整字段（type/name/autoRequest/options/reqPrep/reqAfter）、内置服务 args 结构、自定义服务 args 与前端变量（`$ds.checkedDataIds` 等）** 参照 `sdd-contracts.md` §内置服务详细参数契约 和 §自定义服务。
 
 标准数据源配置示例：
 
@@ -331,51 +329,22 @@ export default {
 }
 ```
 
-**前后端参数对照表（每个自定义数据源必须填写）**：
+带 reqPrep/reqAfter 的数据源示例：
 
-| Java 参数名 | Java 类型 | JSON-RPC args 字段名 | 前端绑定路径 / 来源 | 类型转换 | 说明 |
-|---|---|---|---|---|---|
-| `rs` | `RecordSet` | —（平台注入） | — | — | 不写在 args 里 |
-| `[param1]` | `Long` | `[param1]` | `$ds.checkedDataIds` / `$table.row.id` | JS String → Java Long | [说明] |
-| `[param2]` | `String` | `[param2]` | 固定值 `"ENABLE"` / `vm.biz.form.data.[field]` | 直接传字符串 | [说明] |
-| `[dateParam]` | `Date` | `[dateParam]` | `vm.biz.form.data.[dateField]` | `"yyyy-MM-dd HH:mm:ss"` 字符串 | 时区以服务端为准 |
-
-> 字段名必须与 Java 方法入参名完全一致；类型转换规则参照 `sdd-contracts.md` §字段类型跨端映射。
-
-**reqPrep / reqAfter 典型场景示例**：
-
-```js
-// 场景1：请求前注入当前表单字段值
-reqPrep: (vm, options, config) => {
-  options.params.args.category = vm.biz.form.data.category;
-  options.params.args.filter = [["status", "=", "ACTIVE"]];
-  return options;  // 必须 return options
-},
-
-// 场景2：请求后提取嵌套数据 / 格式化字段
-reqAfter: (vm, res, config) => {
-  if (res && res.data) {
-    res.data = res.data.map(item => ({
-      ...item,
-      label: item.name,   // 重命名字段供前端使用
-      value: item.id
-    }));
-  }
-  return res;  // 必须 return res
-},
-
-// 场景3：日期格式转换（后端返回字符串，前端需要 Date 对象）
-reqAfter: (vm, res, config) => {
-  if (res && res.data) {
-    res.data.createDate = res.data.createDate
-      ? new Date(res.data.createDate)
-      : null;
-  }
-  return res;
+```json
+{
+  "type": "api",
+  "name": "customList",
+  "autoRequest": false,
+  "options": {
+    "model": "books_manage",
+    "service": "getCustomList",
+    "args": { "type": "ACTIVE" }
+  },
+  "reqPrep": "(vm, params) => { params.args.type = vm.biz.form.data.category; return params }",
+  "reqAfter": "(vm, res) => { return res.data || [] }"
 }
 ```
-
-> **规则**：`reqPrep` 必须 `return options`；`reqAfter` 必须 `return res`；不得在这两个钩子里发起新的异步请求。
 
 绑定和事件汇总：
 

@@ -22,6 +22,9 @@ import com.sie.snest.sdk.annotation.validate.Validate;
 
 // ===== ORM 关联注解（按需）=====
 import com.sie.snest.sdk.annotation.orm.*;   // @Selection @Option @OneToMany @ManyToOne @JoinColumn @JoinTable @Shard @Index
+import com.sie.snest.sdk.annotation.orm.Selection;
+
+
 import com.sie.snest.sdk.annotation.Dict;    // @Dict 字典
 import com.sie.snest.sdk.CascadeType;        // CascadeType.DEL_SET_NULL 等
 

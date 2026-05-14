@@ -33,24 +33,7 @@
 | `data/menus.json` | 新增/修改 | 菜单 |
 | `apps/apps.json` | 修改 | 登记 jar |
 
-`app.json` 产品线字段填写：
-
-```json
-{
-  "name": "[appName]",
-  "displayName": "[App 中文名]",
-  "product": "[product]",
-  "productDesc": "[productDesc]",
-  "category": "[product]",
-  "categoryDesc": "[productDesc]",
-  "sequence": [productSequence],
-  "resolved": "com.sie.iidp.[appPkg]",
-  "type": "SDK",
-  "application": true,
-  "view": [],
-  "data": []
-}
-```
+> **生成 `app.json` 时，必须读取 `skills/backend/references/core/pom-structure.md` §app.json 章节获取完整字段定义**，不使用本文内联模板（避免字段漂移）。按 §1 命名表中的 `appName`、`appPkg`、`product`、`productDesc`、`productSequence` 填写对应字段。
 
 ## 3. 模型设计
 

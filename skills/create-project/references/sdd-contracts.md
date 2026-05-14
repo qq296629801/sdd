@@ -354,6 +354,135 @@ ds_config: {
 
 - 自定义查询服务必须继续支持平台 Filter、分页、排序和字段选择。
 
+### 典型 Filter 业务场景示例
+
+**场景 1：单状态筛选**
+
+```json
+[["status", "=", "ENABLE"]]
+```
+
+**场景 2：关键词模糊搜索（多字段 OR）**
+
+```json
+["|", ["name", "ilike", "%关键词%"], ["code", "ilike", "%关键词%"]]
+```
+
+**场景 3：状态 + 关键词组合（AND + OR）**
+
+```json
+["&",
+  ["status", "=", "ENABLE"],
+  ["|", ["name", "ilike", "%关键词%"], ["code", "ilike", "%关键词%"]]
+]
+```
+
+**场景 4：日期范围 + 状态 + 负责人**
+
+```json
+["&",
+  ["status", "in", ["DRAFT", "SUBMITTED"]],
+  ["createDate", ">=", "2025-01-01 00:00:00"],
+  ["createDate", "<=", "2025-12-31 23:59:59"],
+  ["ownerId", "=", "当前用户ID"]
+]
+```
+
+**场景 5：排除已删除 + 关联字段过滤（点访问）**
+
+```json
+["&",
+  ["active", "=", true],
+  ["org.parent.name", "like", "%华南%"]
+]
+```
+
+---
+
+## 自定义服务完整请求/响应示例
+
+### 请求示例（状态变更类）
+
+```json
+{
+  "id": "guid",
+  "jsonrpc": "2.0",
+  "method": "service",
+  "params": {
+    "model": "{model_name}",
+    "service": "[serviceName]",
+    "tag": "master",
+    "app": "sie-iidp-demo-{appName}",
+    "context": { "uid": "", "lang": "zh_CN" },
+    "args": {
+      "bind_ids": ["id1", "id2"],
+      "[param2]": "ENABLE"
+    }
+  }
+}
+```
+
+### 响应示例
+
+**Boolean 返回（操作成功/失败）**：
+
+```json
+{ "id": "guid", "jsonrpc": "2.0", "result": { "data": true, "context": {} } }
+```
+
+**Map 返回（返回更新后记录关键字段）**：
+
+```json
+{ "id": "guid", "jsonrpc": "2.0", "result": { "data": { "id": "xxx", "status": "SUBMITTED", "submitTime": "2025-01-01 10:00:00" }, "context": {} } }
+```
+
+**List 返回（批量结果）**：
+
+```json
+{ "id": "guid", "jsonrpc": "2.0", "result": { "data": [{ "id": "xxx", "result": true }], "context": {} } }
+```
+
+**错误响应**：
+
+```json
+{ "id": "guid", "jsonrpc": "2.0", "error": { "code": -32000, "message": "当前状态不允许执行提交操作", "data": null } }
+```
+
+---
+
+## 错误码与错误响应规范
+
+> 来源：`skills/backend/references/core/platform-standards.md` §异常与事务
+
+| 场景 | 异常类型 | error.code | error.message 格式 | 前端展示方式 |
+|---|---|---|---|---|
+| 必填参数缺失/格式错误 | `ValidationException` | `-32602` | `"[字段名] 不能为空"` / `"[字段名] 格式不正确"` | inline 字段提示 / toast |
+| 业务状态不允许 | `ModelException` | `-32000` | `"当前状态不允许执行[操作名]"` | toast 提示 |
+| 业务规则违反 | `ModelException` | `-32000` | `"[具体业务原因]"` | toast 提示 |
+| 权限不足 | `ModelException` | `-32000` | `"无权限执行[操作名]"` | toast 提示 |
+| 系统内部错误 | 平台处理 | `-32603` | 不暴露堆栈/SQL | toast 通用提示 |
+
+**规则**：
+- `ValidationException` 不触发事务回滚；`ModelException` 触发请求级事务回滚
+- `error.message` 必须是用户可理解的中文提示，不暴露 SQL、堆栈、内部类名
+- 前端统一用 toast 展示服务端错误；表单字段级错误用 inline 提示
+- 业务错误码建议以模型名为前缀：`ORDER_STATUS_INVALID`、`STOCK_NOT_ENOUGH`（后端 `ModelException` message 直接写，不需要单独维护错误码枚举，除非前端需要差异化处理）
+
+---
+
+## 字段类型跨端映射
+
+| Java 类型 | JSON 类型 | 前端注意事项 |
+|---|---|---|
+| `Long` / `long` | `String`（IIDP 平台序列化为字符串） | 不用 JS Number，避免精度丢失（超过 2^53） |
+| `BigDecimal` | `String` 或 `Number` | 展示时用平台格式化组件，不直接做 JS 浮点运算 |
+| `Date`（DataType.DateTime） | `"yyyy-MM-dd HH:mm:ss"` 字符串 | 前端传参与后端 `dateFormat` 一致 |
+| `Date`（DataType.Date） | `"yyyy-MM-dd"` 字符串 | 时区以服务端为准 |
+| `Boolean` | `true` / `false` | `@Selection` 的 `useDisplayForModel` 会转为显示文案 |
+| `String`（枚举） | 字符串（`@Option.value`） | 传值用 value，不用 label；`useDisplayForModel: true` 时返回 label |
+
+---
+
 ## 按钮与服务契约
 
 ```json

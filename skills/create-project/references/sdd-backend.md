@@ -17,6 +17,9 @@
 | model_name | `[app_entity]` | 小写下划线，全局唯一 |
 | Java 类名 | `[EntityName]` | UpperCamelCase |
 | 菜单 key | `[app_module_menu]` | 带业务前缀 |
+| product | `[xxx]` | 产品线标识，写入 `app.json.product/category`，全小写 |
+| productDesc | `[中文产品线名称]` | 产品线显示名，写入 `app.json.productDesc/categoryDesc` |
+| productSequence | `[-100]` | 产品线在导航中的排序，数字越小越靠前，写入 `app.json.sequence` |
 
 ## 2. 工程文件
 
@@ -29,6 +32,25 @@
 | `views/{model_name}_view.json` | 新增 | 后端视图 |
 | `data/menus.json` | 新增/修改 | 菜单 |
 | `apps/apps.json` | 修改 | 登记 jar |
+
+`app.json` 产品线字段填写：
+
+```json
+{
+  "name": "[appName]",
+  "displayName": "[App 中文名]",
+  "product": "[product]",
+  "productDesc": "[productDesc]",
+  "category": "[product]",
+  "categoryDesc": "[productDesc]",
+  "sequence": [productSequence],
+  "resolved": "com.sie.iidp.[appPkg]",
+  "type": "SDK",
+  "application": true,
+  "view": [],
+  "data": []
+}
+```
 
 ## 3. 模型设计
 

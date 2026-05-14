@@ -72,6 +72,9 @@
 - 是否需要前端代码：是/否
 - 目标工程：
 - 目标应用：`apps/<appName>`
+- product（产品线标识）：`[product]`
+- productDesc（产品线名称）：`[productDesc]`
+- productSequence（导航排序）：`[productSequence]`
 
 ## 2. 原型来源 [核心]
 

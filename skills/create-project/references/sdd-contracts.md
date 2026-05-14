@@ -9,13 +9,13 @@
 
 ### 模型 1：[ModelName] (`[model_name]`)
 
-| service | 类型 | args 参数（名称: 类型） | 权限码 | 前端入口 | 节点 id | 待确认 |
-|---|---|---|---|---|---|---|
-| `search` | 内置 | 平台标准（`filter/properties/limit/offset/order`） | `read` | grid 加载 | `{model_name}_grid` | — |
-| `create` | 内置 | 平台标准（`valuesList`） | `create` | tbar 新增 | — | — |
-| `update` | 内置 | 平台标准（`ids/values`） | `update` | 行编辑 | — | — |
-| `delete` | 内置 | 平台标准（`ids`） | `delete` | 行删除 | — | — |
-| `[xxx]` | 自定义 | `[paramName]: [type]`，多参数用 ` / ` 分隔 | `[auth]` | grid 按钮 | `[id]` | — |
+| app | model | service | 类型 | args 参数（名称: 类型） | 权限码 | 前端入口 | 节点 id | 待确认 |
+|---|---|---|---|---|---|---|---|---|
+| `sie-iidp-demo-{appName}` | `{model_name}` | `search` | 内置 | 平台标准（详见 `method-service.md` §search 入参） | `read` | grid 加载 | `{model_name}_grid` | — |
+| `sie-iidp-demo-{appName}` | `{model_name}` | `create` | 内置 | 平台标准（详见 `method-service.md` §create 入参） | `create` | tbar 新增 | — | — |
+| `sie-iidp-demo-{appName}` | `{model_name}` | `update` | 内置 | 平台标准（详见 `method-service.md` §update 入参） | `update` | 行编辑 | — | — |
+| `sie-iidp-demo-{appName}` | `{model_name}` | `delete` | 内置 | 平台标准（详见 `method-service.md` §delete 入参） | `delete` | 行删除 | — | — |
+| `sie-iidp-demo-{appName}` | `{model_name}` | `[xxx]` | 自定义 | `[paramName]: [type]`，多参数用 ` / ` 分隔 | `[auth]` | grid 按钮 | `[id]` | — |
 
 ### 模型 2：[ModelName] (`[model_name]`)
 ...

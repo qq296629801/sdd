@@ -39,6 +39,7 @@
 ```
 
 关键规则：
+
 - 按钮文本使用 `value`，不要使用 `text`。
 - 样式和按钮状态放在 `options`。
 - 常用 `options`：`type`、`size`、`icon`、`disabled`、`plain`。
@@ -61,6 +62,7 @@
 ```
 
 关键规则：
+
 - 子组件放在 `items`。
 - 只需要包裹一组节点或控制布局时使用 `container`。
 - 样式放 `style`、`className`、`css`。
@@ -86,6 +88,7 @@
 ```
 
 关键规则：
+
 - 行布局组件 `type` 是 `row`。
 - 子节点可用 `span` 控制列宽。
 - `selfAdaptionW` 用于自适应列宽，嵌套表单时更常见。
@@ -110,6 +113,7 @@
 ```
 
 关键规则：
+
 - 表格节点 `type` 是 `table`。
 - 表格数据使用 `tableData` 或 `bind_tableData`。
 - 列配置放在 `items`，也兼容 `columns`。
@@ -150,6 +154,7 @@
 ```
 
 关键规则：
+
 - 表单配置放 `formConfig`。
 - 表单值放在 `dataSource.form`。
 - 表单项用 `name` 对应 `dataSource.form` 的字段。
@@ -174,6 +179,7 @@
 ```
 
 关键规则：
+
 - 表单内通过 `name` 绑定 `dataSource.form[name]`。
 - 表单外单独使用时，可配置 `model: { [name]: value }`。
 - 常用属性：`placeholder`、`inputType`、`readonly`、`showPassword`、`prefixIcon`、`suffixIcon`、`append`。
@@ -203,6 +209,7 @@
 ```
 
 关键规则：
+
 - 弹窗显示控制使用 `display`。
 - 标题使用 `title`，宽度使用 `width`。
 - 内容组件放 `items`。
@@ -231,6 +238,7 @@
 ```
 
 关键规则：
+
 - 抽屉显示控制使用 `visible`。
 - 标题使用 `title`，宽度使用 `width`。
 - 内容组件放 `items`。
@@ -257,6 +265,7 @@
 ```
 
 关键规则：
+
 - 必填关键信息：`searchModel`、`matchColumns`、`searchKey`。
 - `labelField` 控制选中后显示字段；未配置时默认取 `searchKey`。
 - `selectedValue` 控制实际值字段，默认 `id`。
@@ -277,29 +286,30 @@
       v-model="innerValue"
       active-color="#13ce66"
       inactive-color="#ff4949"
-      :active-text="customAttrs">
+      :active-text="customAttrs"
+    >
     </el-switch>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'tech-switch-custom',
+  name: "tech-switch-custom",
   props: {
     value: {
       type: Boolean,
-      default: false
+      default: false,
     },
     customAttrs: {
       type: String,
-      default: ''
-    }
+      default: "",
+    },
   },
   data() {
     return {
-      innerValue: this.value
+      innerValue: this.value,
     };
-  }
+  },
 };
 </script>
 ```
@@ -308,10 +318,10 @@ export default {
 
 ```js
 // apps/<appName>/common/comps.js
-import customVueComp from '../../component/example/customVueComp.vue';
+import customVueComp from "../../component/example/customVueComp.vue";
 
 export default {
-  customVueComp
+  customVueComp,
 };
 ```
 
@@ -327,23 +337,58 @@ export default {
 ```
 
 关键规则：
+
 - 只有用户明确要求新建、注册或使用自定义 Vue 组件时，才读取或修改 `apps/<appName>/common/comps.js`。
 - 自定义 Vue 组件使用 Vue2 语法，不使用 Vue3 `defineComponent` / Composition API 写法。
 - Vue 组件内必须声明稳定 `name`，且组件名强制以 `tech-` 开头。
 - 在 `common/comps.js` 中 import 并 export 后，才能在视图配置中通过组件 `type` 使用。
 - **视图中的 `type` 使用组件 `name` 去掉 `tech-` 前缀后的值，不是 `comps.js` 中 import/export 的变量名。** 例如组件声明 `name: 'tech-switch-custom'`，视图中 `type` 应为 `'switch-custom'`，而不是 `comps.js` 中的 `customVueComp`。
 - `comps.js` 中的 import 变量名仅用于注册，不参与视图 `type` 的命名。
-- **组件内调用接口使用全局方法 `window.Tech.httpMeta`**，不要单独引入 axios 或其他请求库。
+- **组件内调用接口使用全局方法 `window.Tech.httpMeta`**，不要单独引入 axios 或其他请求库。调用格式必须遵循元模型后端传参规范（参考 [API接口参数说明](../../backend/references/complete/api-params.md)）：
+  ```js
+  const res = await window.Tech.httpMeta({
+    data: {
+      params: {
+        args: {
+          filter: [
+            // 前缀波兰表达式：逻辑符在前，条件三元组在后
+            // AND（默认）：[["name", "=", "ABC"], ["status", "=", "ENABLE"]]
+            // OR：        ["|", ["name", "like", "%admin"], ["email", "like", "%126"]]
+            // 混合：      ["&", ["state", "=", "RELEASED"], ["|", ["userId", "=", "1000"], ["userId", "=", false]]]
+            // 操作符：= != > >= < <= like ilike "not like" "not ilike" in "not in" child_of parent_of
+            // 逻辑符：&（AND，二元，省略时默认） |（OR，二元） !（NOT，单目）
+            ["status", "=", "ENABLE"],
+          ],
+          limit: 31,
+          offset: 0,
+          properties: ["*"],
+          order: "id desc",
+          // 其他参数按前后端契约填写：ids、values、valuesList 等
+        },
+        model: "rbac_user",
+        service: "search",
+        app: "base",
+      },
+    },
+  });
+  // 返回结果在 res.data 中
+  ```
+  **重要**：`params` 里的每个字段都必须依据前后端契约填写：
+  - `app`：后端应用名称，不可随意填写。
+  - `model`：元模型名称，由后端定义。
+  - `service`：服务方法名（如 `search`/`create`/`update`/`delete`），由后端定义。
+  - `args`：请求参数对象。
+  - 接口返回的数据在 `res.data` 中。
 - 如果只是复用一段 IIDP 视图配置，不需要写 Vue 组件，优先使用 `custom-view-component`。
 - **扩展视图 JS 文件（`views/` 目录下的 `.js` 文件）禁止直接 import Vue 组件（`.vue` 文件）。** 组件注册只在 `comps.js` 中完成，扩展视图通过 `type` 引用已注册的组件。Vue 组件之间的父子引用在 `.vue` 文件内部的 `components` 选项中完成。
 
 > **常见错误**：扩展视图中 `type` 写成 `comps.js` 的 export 变量名（如 `TraceForwardPage`）或直接抄规格文档中的大写名称。正确做法是取组件 `name` 去掉 `tech-` 前缀（如 `trace-forward-page`）。三个值的对应关系：
 >
-> | 来源 | 示例值 | 用途 |
-> |------|--------|------|
-> | 组件 `name` 属性 | `tech-trace-forward-page` | 组件声明、comps.js 注册 |
-> | comps.js export 变量名 | `TraceForwardPage` | 仅用于 JS 模块注册，**不用于**视图 type |
-> | 扩展视图 `type` | `trace-forward-page` | 视图配置中引用组件 |
+> | 来源                   | 示例值                    | 用途                                    |
+> | ---------------------- | ------------------------- | --------------------------------------- |
+> | 组件 `name` 属性       | `tech-trace-forward-page` | 组件声明、comps.js 注册                 |
+> | comps.js export 变量名 | `TraceForwardPage`        | 仅用于 JS 模块注册，**不用于**视图 type |
+> | 扩展视图 `type`        | `trace-forward-page`      | 视图配置中引用组件                      |
 
 ### 组件目录结构
 
@@ -373,14 +418,14 @@ apps/component/
 
 ```js
 // apps/<appName>/common/comps.js
-import OrderManage from '../../component/order-manage/OrderManage.vue';
-import OrderTable from '../../component/order-manage/OrderTable.vue';
-import OrderForm from '../../component/order-manage/OrderForm.vue';
+import OrderManage from "../../component/order-manage/OrderManage.vue";
+import OrderTable from "../../component/order-manage/OrderTable.vue";
+import OrderForm from "../../component/order-manage/OrderForm.vue";
 
 export default {
   OrderManage,
   OrderTable,
-  OrderForm
+  OrderForm,
 };
 ```
 
@@ -401,33 +446,37 @@ export default {
 <template>
   <div class="order-manage">
     <tech-order-table :table-data="tableData" @edit="handleEdit" />
-    <tech-order-form :visible="formVisible" :form-data="currentRow" @save="handleSave" />
+    <tech-order-form
+      :visible="formVisible"
+      :form-data="currentRow"
+      @save="handleSave"
+    />
   </div>
 </template>
 
 <script>
 // 引入子组件
-import OrderTable from './OrderTable.vue';
-import OrderForm from './OrderForm.vue';
+import OrderTable from "./OrderTable.vue";
+import OrderForm from "./OrderForm.vue";
 
 export default {
-  name: 'tech-order-manage',
+  name: "tech-order-manage",
   // 注册子组件
   components: {
-    'tech-order-table': OrderTable,
-    'tech-order-form': OrderForm,
+    "tech-order-table": OrderTable,
+    "tech-order-form": OrderForm,
   },
   props: {
     value: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
     return {
       tableData: [],
       formVisible: false,
-      currentRow: {}
+      currentRow: {},
     };
   },
   methods: {
@@ -437,8 +486,8 @@ export default {
     },
     handleSave() {
       this.formVisible = false;
-    }
-  }
+    },
+  },
 };
 </script>
 ```
@@ -458,13 +507,13 @@ export default {
 
 <script>
 export default {
-  name: 'tech-order-table',
+  name: "tech-order-table",
   props: {
     tableData: {
       type: Array,
-      default: () => []
-    }
-  }
+      default: () => [],
+    },
+  },
 };
 </script>
 ```
@@ -478,20 +527,20 @@ export default {
 ```js
 // apps/component/test.js
 const test = {
-  name: 'tech-test',
+  name: "tech-test",
   __block: true,
   view: {
-    type: 'container',
-    id: 'tt-1',
+    type: "container",
+    id: "tt-1",
     autoChildrenId: true,
     items: [
       {
-        type: 'button',
-        id: 'tt-2',
-        value: '区块视图组件测试按钮'
-      }
-    ]
-  }
+        type: "button",
+        id: "tt-2",
+        value: "区块视图组件测试按钮",
+      },
+    ],
+  },
 };
 
 export default test;
@@ -501,10 +550,10 @@ export default test;
 
 ```js
 // apps/<appName>/common/comps.js
-import test from '../../component/test.js';
+import test from "../../component/test.js";
 
 export default {
-  test
+  test,
 };
 ```
 
@@ -520,6 +569,7 @@ export default {
 ```
 
 关键规则：
+
 - 文件通常放在 `apps/component/<name>.js`。
 - 组件定义必须包含 `name`、`__block: true`、`view`。
 - `name` 必须以 `tech-` 开头。

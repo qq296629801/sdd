@@ -6,6 +6,7 @@
 ## 重要规则
 
 - **page 类型节点不能被 replace**：需要替换整个页面内容时，应 replace `page` 节点下的 `container` 子节点，而非 `page` 节点本身。
+- **禁止 replace `container_main`**：`container_main` 是整个标准页根容器（包含树、内容区、详情区等），replace 它会导致页面结构异常。需要替换整个表格页内容时，应 replace `table_main_wrap`（表格页视图根节点）。
 
 ## ID 前缀规则
 

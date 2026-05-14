@@ -94,6 +94,13 @@
 | `delete` | 内置/重写 | `delete(RecordSet rs)` | 无 | `{model_name}:delete` | 软删除 | [说明] |
 | `[serviceName]` | 自定义 `@MethodService` | `[methodName](RecordSet rs, [业务入参...])` | `[result]` | `{model_name}:[auth]` | [副作用] | [说明] |
 
+> **§4 完成后必须同步到 `sdd-contracts.md`**：每个自定义 `@MethodService` 完成后，将以下信息填入契约对应模型的服务契约表：
+> 1. `service` 列：`@MethodService(name=...)` 的 `name` 值
+> 2. `args 参数` 列：Java 方法签名中 **`RecordSet rs` 之后** 的每个业务参数，按 `参数名: 前端类型` 格式填写，多个用 ` / ` 分隔；`RecordSet` 本身不填
+> 3. `权限码` 列：`@MethodService(auth=...)` 的值
+>
+> 类型映射规则见 `sdd-contracts.md` args 类型映射规则表。
+
 > **副作用列**：列出服务执行成功后自动写入的字段、生成的关联记录、外部调用等。失败时由 IIDP 请求级事务统一回滚（见事务决策树）。
 
 服务规则：

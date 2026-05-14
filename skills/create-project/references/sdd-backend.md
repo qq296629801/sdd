@@ -200,6 +200,13 @@ List<?> related = meta.get("[model]").find(Filter.in("id", ids), ...)
 ````
 
 > **填写规则**：每个 `@MethodService` 对应一个详细设计块；顺序与服务清单表一致。查询逻辑重点说明关联方式（ER 字段 / 批量 find / 禁止 N+1），业务步骤用编号列出操作顺序，不需要写 Java 语法，伪代码即可。
+>
+> **规范来源（生成代码时必须对照）**：
+> - 查询逻辑 / N+1 禁止：`skills/backend/references/core/platform-standards.md` §ER 查询
+> - Filter 构建（equal/in/like/and 等）：`skills/backend/references/core/method-service.md` → "Filter 常用构建"
+> - ValidationException / ModelException 分层：`skills/create-project/references/sdd-contracts.md` §5 异常与事务
+> - 事务 / 分段提交（Meta.flush/commit）：`skills/backend/references/core/method-service.md` → 事务控制
+> - @MethodService 声明与重写 create/update/delete：`skills/backend/references/core/method-service.md`
 
 ## 5. 视图和菜单
 

@@ -44,7 +44,11 @@
 | `[dateField]` | `Date` | `displayName="[中文名]", dataType=DataType.DateTime, dateFormat="yyyy-MM-dd HH:mm:ss"` | 否 | — | 否 | 日期字段必须指定 dataType 和 dateFormat |
 | `[erField]` | ManyToOne | `@ManyToOne` + `@JoinColumn(name="[col]")` | 是/否 | — | 是 | 同 App ER 关联 |
 
-> 详细 @Property 参数（`store`、`readonly`、`computeMethod`、`defaultMethod`、`contentType`、`multiple` 等）和高级 ER 指令参照 `skills/backend/references/core/model.md` 和 `model-property-advanced.md`。
+> **生成任何模型字段前必须先读取以下文件**：
+> - `skills/backend/references/core/model.md`：`@Property` 完整参数（`store`、`readonly`、`dataType`、`dateFormat`、`widget`、`contentType`、`multiple`、`computeMethod`、`defaultMethod` 等）、`@Model` 声明、`@Selection`、`@Dict` 用法
+> - `skills/backend/references/core/model-property-advanced.md`：`@ManyToOne`、`@OneToMany`、`@ManyToMany`、`@JoinColumn`、`@JoinTable` 等高级 ER 注解的完整参数和示例
+>
+> **不得凭记忆或推断填写注解参数**；对照以上文件中的实际代码示例生成，缺参数就补，错参数就改。
 
 模型规则：
 - 模型类使用 `@StaticVar @Getter @Setter @Model`，需要日志时加 `@Slf4j`。
@@ -228,18 +232,19 @@ List<?> related = meta.get("[model]").find(Filter.in("id", ids), ...)
 | `{model_name}_search` | `search` | `primary` | 搜索 |
 | `{model_name}_form` | `form` | `primary` | 表单 |
 
-菜单（参照 `skills/backend/references/core/menu.md`）：
+菜单：
 
-| 字段 | 必填 | 值 | 说明 |
-|---|---|---|---|
-| `name`（key） | 是 | `{appPkg}_{entity}_menu` | 全局唯一，建议以 appPkg 开头 |
-| `display_name` | 是 | `"[功能中文名]"` | 菜单显示名 |
-| `sequence` | 是 | 数字 | 同级排序，数字越小越靠前 |
-| `active` | 是 | `true` | 是否启用 |
-| `model` | 功能菜单必填 | `"{model_name}"` | 与 Java `@Model(name)` 一致 |
-| `view` | 功能菜单必填 | `"{model_name}_grid,{model_name}_search,{model_name}_form"` | 逗号连接多个视图 key |
-| `parent_ids` | 子菜单必填 | `{ "@ref": "{appPkg}_{moduleName}_root_menu" }` | 推荐写法，引用父菜单 name |
-| `parent_id` | 可选 | `"{appPkg}_{moduleName}_root_menu"` | 直接字符串写法，不推荐 |
+> **生成 `menus.json` 前必须先读取 `skills/backend/references/core/menu.md`**，获取完整 JSON 字段定义、根菜单结构、子菜单结构和实际示例。不使用本文内联字段表（避免格式漂移）。以下为字段速查，**实际 JSON 结构以 `menu.md` 为准**：
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `name`（key） | 是 | 全局唯一，建议以 appPkg 开头，如 `{appPkg}_{entity}_menu` |
+| `display_name` | 是 | 菜单显示名 |
+| `sequence` | 是 | 同级排序，数字越小越靠前 |
+| `active` | 是 | 是否启用，通常 `true` |
+| `model` | 功能菜单必填 | 与 Java `@Model(name)` 一致 |
+| `view` | 功能菜单必填 | 逗号连接多个视图 key |
+| `parent_ids` | 子菜单必填 | `{ "@ref": "{appPkg}_{moduleName}_root_menu" }` |
 
 操作栏按钮（从 §4 服务设计表提取，参照 `view.md` 按钮结构）：
 
@@ -266,13 +271,11 @@ List<?> related = meta.get("[model]").find(Filter.in("id", ids), ...)
 
 ## 6. 数据和权限
 
-- 种子数据（格式参照 `skills/backend/references/core/seed-data.md`）：
-  - 文件：`data/{model_name}.json`
-  - 结构：`{ "data": { "{seed_key}": { "model": "{model_name}", "isGlobal": true/false, "policy": "never/always", "properties": {...} } } }`
-  - ER 外键：`{ "@ref": "seed_key" }`；跨 App：`{ "@ref": "[appPkg].[seed_key]" }`
-- 字典：
-  - 文件：`data/{model_name}_dict.json`
-  - 结构：`{ "dicts": { "{typeCode}": { "typeName": "...", "items": [{ "itemName": "...", "itemValue": "..." }] } } }`
+- 种子数据和字典：
+
+> **生成 `data/*.json` 前必须先读取 `skills/backend/references/core/seed-data.md`**，获取业务种子数据（`data` 字段）、字典数据（`dicts` 字段）的完整 JSON 格式、`policy` 枚举值、`@ref`/`@fileId`/`@fileUrl` 引用语法和完整示例。不使用本文内联结构提示（避免格式漂移）。
+>
+> 速查：业务种子文件为 `data/{model_name}.json`；字典文件为 `data/{model_name}_dict.json` 或独立 `data/dict.json`。**实际 JSON 结构以 `seed-data.md` 为准**。
 - 附件：
   - 文件索引：`data/file/{file_key}.json`；实际文件：`file/document/{path}`
   - 种子引用：`{ "@fileId": "{file_key}" }` / `{ "@fileUrl": "{file_key}" }`

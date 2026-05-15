@@ -47,7 +47,9 @@
 
 ## 后端能力识别
 
-每个需求先映射到 `skills/backend/references/core/capability-map.md` 中的能力域：
+> **识别后端能力域前必须先读取 `skills/backend/references/core/capability-map.md`**，按其能力域总览表匹配需求，再按匹配结果加载对应专题文件。不得只使用下方内联速查（仅覆盖 7 个常见域，缺少 openView/弹窗/视图联动/聚合查询/输入组件/Redis/XXL-Job 等扩展域）。
+
+常见能力域速查（完整 15 个域及专题文件见 `capability-map.md`）：
 
 - 工程、应用、部署：POM、`app.json`、`apps/apps.json`、Docker Compose。
 - 模型、字段、校验、ER：`@Model`、`@Property`、`@Validate`、ORM 注解。

@@ -214,17 +214,11 @@ List<?> related = meta.get("[model]").find(Filter.in("id", ids), ...)
 
 ## 5. 视图和菜单
 
-视图 JSON 公共结构（每个视图必须包含，参照 `skills/backend/references/core/view.md`）：
+视图：
 
-| 字段 | 值 | 说明 |
-|---|---|---|
-| `mode` | `"primary"` / `"extension"` | 普通视图用 `primary`；扩展视图用 `extension` |
-| `name` | `"[中文名]"` | 权限点和页面显示名 |
-| `model` | `"{model_name}"` | 与 Java `@Model(name)` 完全一致 |
-| `type` | `"grid"` / `"search"` / `"form"` / `"tree"` | 视图主体类型 |
-| `body.type` | 同 `type` | 与外层 type 保持一致 |
+> **生成任何视图 JSON 前必须先读取 `skills/backend/references/core/view.md`**，获取 grid/search/form/tree 各类型视图的完整 JSON 结构、tbar、columns、buttons、search fields、body 嵌套层级和实际示例。不使用本文内联字段表（避免结构漂移）。
 
-标准三视图 key：
+标准三视图 key（key 命名规则以 `view.md` 为准）：
 
 | 视图 key | type | mode | 说明 |
 |---|---|---|---|
@@ -246,7 +240,9 @@ List<?> related = meta.get("[model]").find(Filter.in("id", ids), ...)
 | `view` | 功能菜单必填 | 逗号连接多个视图 key |
 | `parent_ids` | 子菜单必填 | `{ "@ref": "{appPkg}_{moduleName}_root_menu" }` |
 
-操作栏按钮（从 §4 服务设计表提取，参照 `view.md` 按钮结构）：
+操作栏按钮（从 §4 服务设计表提取）：
+
+> **生成按钮 JSON 时必须对照 `view.md` 按钮结构**，获取 `action`、`service`、`auth`、`args`、`bind_ids`、`actionAfter`、`bind_display` 等完整属性和示例。以下为速查，**实际按钮 JSON 结构以 `view.md` 为准**：
 
 | 按钮 | action | service | auth | 位置 |
 |---|---|---|---|---|

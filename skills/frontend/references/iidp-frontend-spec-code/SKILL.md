@@ -1,6 +1,6 @@
 ---
 name: iidp-frontend-spec-code
-description: Use when generating IIDP frontend code from an IIDP frontend implementation spec document, especially specs produced by iidp-frontend-spec-doc, and writing the result into an existing IIDP frontend project such as front/demo-project.
+description: Use when generating IIDP frontend code from an IIDP frontend implementation spec document, especially specs produced by iidp-frontend-spec-doc, and writing the result into an existing IIDP frontend project such as front/sie-iidp-frontend-project.
 ---
 
 # IIDP 前端规格到代码生成
@@ -15,7 +15,7 @@ description: Use when generating IIDP frontend code from an IIDP frontend implem
 
 - 定位：将 IIDP 前端实现规格落到具体工程代码变更（扩展视图/hook/组件/配置），并写入用户指定的 IIDP 前端工程。
 - 上游：[iidp-frontend-spec-doc](../iidp-frontend-spec-doc/SKILL.md)（规格事实来源）、[iidp-frontend-dev-manual](../iidp-frontend-dev-manual/SKILL.md)（框架/组件/扩展机制参考）、[iidp-frontend-init](../iidp-frontend-init/SKILL.md)（工程/应用创建与按需加载）、[iidp-frontend-extension-dev](../iidp-frontend-extension-dev/SKILL.md)（扩展视图/hook/数据源/绑定/命令/自定义组件规则）。
-- 下游：目标前端工程（如 `front/demo-project`）内的业务应用与扩展代码。
+- 下游：目标前端工程（如 `front/sie-iidp-frontend-project`）内的业务应用与扩展代码。
 
 ## 必读关联 Skill
 
@@ -30,8 +30,8 @@ description: Use when generating IIDP frontend code from an IIDP frontend implem
 
 ### 1. 检查前端工程是否存在
 
-- 如果用户未指定工程路径，默认使用 `front/demo-project`。
-- 检查目标工程目录是否存在（如 `front/demo-project`），且包含 `package.json`、`apps/` 等 IIDP 工程标志文件。
+- 如果用户未指定工程路径，默认使用 `front/sie-iidp-frontend-project`。
+- 检查目标工程目录是否存在（如 `front/sie-iidp-frontend-project`），且包含 `package.json`、`apps/` 等 IIDP 工程标志文件。
 - **工程不存在**：按 `iidp-frontend-init` 的流程创建工程。
   - 先运行 `tech --help` 确认 `t-cli` 已安装。
   - 切换到工程存放目录，执行 `tech project <projectName>`。
@@ -61,7 +61,7 @@ description: Use when generating IIDP frontend code from an IIDP frontend implem
    - 特别复杂且 IIDP 节点难以表达的交互，才写 Vue2 自定义组件。
 
 2. 代码必须写入用户指定的 IIDP 前端工程。
-   - 本仓库常用目标工程是 `front/demo-project`。
+   - 本仓库常用目标工程是 `front/sie-iidp-frontend-project`。
    - 默认只改业务扩展源码：`apps/<appName>/views`、`apps/<appName>/common`、`apps/<appName>/config`、`apps/component`。
    - 不要修改 `node_modules`、`dist`、`distApp`、`distTmp`、`umdComps`、`build` 或编译产物。
 
@@ -101,8 +101,6 @@ description: Use when generating IIDP frontend code from an IIDP frontend implem
 - 需要在后端或平台配置的标准模板、在线视图、字段、校验、权限和接口契约。
 - 当前前端工程不修改；即使用户说“生成代码写入工程”，只要规格判定无需前端代码，也必须停止代码生成并说明原因。
 - 只有用户明确要求沉淀前端侧说明文档时，才询问是否写一份说明文档到前端工程文档目录。
-
-示例：`docs/specs/2026-05-03-inventory-organization-iidp-frontend-spec.md` 属于传统管理后台主数据维护页，规格写明“默认不需要前端代码”。除非用户补充特殊前端交互或目标节点 id，否则不要在 `front/demo-project` 里生成扩展代码。
 
 ### B. 需要标准页 hook
 

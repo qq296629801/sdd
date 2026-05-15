@@ -393,7 +393,7 @@ page: [页面 key]
 
 ## 12. 按需加载配置 [可选]
 
-- `effectPaths`：当前配置 / 是否需要修改：
+- `effectPaths`：可参考第 1 节的 `product` 字段配置，格式为 `^/<product>/`（例如 product 为 `abc` 则填 `^/abc/`）
 - `effectPageIds`：当前配置 / **默认不添加，仅在用户明确要求时配置**
 - 是否需要提醒用户确认：是/否
 

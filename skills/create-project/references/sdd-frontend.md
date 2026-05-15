@@ -36,7 +36,7 @@
 2. **节点 id 来源**（按优先级依次获取）：
    - ① 用户明确提供
    - ② 需求规格（`requirements.md`）中的菜单 key——标准视图节点 id 前缀取菜单 key（如菜单 key 为 `books_bookmgr_root_menu`，则节点 id 为 `books_bookmgr_root_menu_xxx`，`xxx`后缀来源于标准模板 ID 规则库）
-   - ③ 标准模板 ID 规则库推导（参考 [iidp-frontend-standard-ids](../../frontend/references/iidp-frontend-standard-ids/SKILL.md)）
+   - ③ 标准模板 ID 规则库推导（**必须先读取** [iidp-frontend-standard-ids](../../frontend/references/iidp-frontend-standard-ids/SKILL.md) 获取节点 id 命名映射规则，不得凭菜单名或文案自行拼接）
    - ④ 询问用户提供或浏览器控制台验证
 
    不确定的必须保留为"待确认"，**不得按文案猜测或自行拼接**。
@@ -237,6 +237,8 @@ page: [菜单或页面 key]
 
 ### 9.2 hook
 
+> **生成 hook 前必须先读取 [`iidp-frontend-extension-dev/SKILL.md`](../../frontend/references/iidp-frontend-extension-dev/SKILL.md) §扩展钩子选择章节**，获取完整钩子点列表（`grid`/`form`/`search`/`tree`/`page`/`gridPage`/`detailPage`）、每类钩子的返回值规则（`before*` 返回 params、`after*` 返回 res、`can*` 返回 boolean）和 `vm.super` 调用规范。内联示例仅为格式参考，**实际可用钩子点和 return 规则以该文件为准**，不得凭猜测或示例推断。
+
 - 是否需要：
 - hook 路径：
 - 是否调用 `vm.super`：
@@ -244,7 +246,7 @@ page: [菜单或页面 key]
 
 路径格式：`apps/<appName>/views/<moduleName>/hooks/<hookName>.js`
 
-示例：
+示例（仅展示格式，完整钩子点见 iidp-frontend-extension-dev/SKILL.md）：
 
 ```javascript
 export default {
@@ -281,6 +283,8 @@ export default {
 
 ### 9.3 扩展视图
 
+> **生成扩展视图前必须先读取 [`iidp-frontend-extension-dev/SKILL.md`](../../frontend/references/iidp-frontend-extension-dev/SKILL.md) §扩展开发协议章节**，获取完整扩展类型规则（selector 写法、beforeOperate 参数、命名唯一性、权重与顺序、selector.pre 复用、动态注册等）。内联扩展类型表仅为速查，**merge 的 items 合并行为、replace 的使用限制等细节以该文件为准**。
+
 - 是否需要：
 - 目标节点 id：
 - 节点 id 来源：后端契约/标准模板规则库推导/用户提供/待确认
@@ -308,13 +312,15 @@ export default {
 
 ## 10. 数据源与绑定 [核心]
 
+> **填写数据源和绑定配置前必须先读取 [`iidp-frontend-dev-manual/SKILL.md`](../../frontend/references/iidp-frontend-dev-manual/SKILL.md)**，获取完整的数据源类型（meta/api）、`reqPrep`/`reqAfter` 签名与返回规则、`bind_`/`bind_two_`/`bind_display`/`bind_on_` 可用属性和事件名。内联 JSON 示例仅为格式参考，**完整配置选项和事件名以 dev-manual 为准**，不得凭示例推断或猜测属性名。
+
 | 数据源   | 类型     | service/model/url | 触发方式         | 返回用途 |
 | -------- | -------- | ----------------- | ---------------- | -------- |
 | `[name]` | meta/api | `[params]`        | autoRequest/手动 | [说明]   |
 
 > **约束**：所有 API 请求必须通过 IIDP 数据源或 `window.Tech.httpMeta` 发起，禁止自行引入 axios、fetch 等请求库。
 
-标准数据源配置示例：
+标准数据源配置示例（完整选项见 iidp-frontend-dev-manual/SKILL.md）：
 
 ```json
 {

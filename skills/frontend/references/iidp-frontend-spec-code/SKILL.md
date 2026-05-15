@@ -108,7 +108,7 @@ description: Use when generating IIDP frontend code from an IIDP frontend implem
 
 实现要求：
 
-- 使用 `iidp-frontend-extension-dev` 的 hook 规则。
+- **实现前必须先读取 [`iidp-frontend-extension-dev/SKILL.md`](../iidp-frontend-extension-dev/SKILL.md) §扩展钩子选择章节**，获取完整钩子点列表、return 值规则和 vm.super 调用规范，不得只凭示例推断可用钩子点。
 - 业务文件放在 `apps/<appName>/views/<business>/<business>.js`。
 - 在 `apps/<appName>/views/index.js` 引入并展开导出。
 - hook 挂载目标通常是页面顶级节点，例如 `<pageId>_container_main`，但必须来自用户或现有代码证据。
@@ -121,6 +121,7 @@ description: Use when generating IIDP frontend code from an IIDP frontend implem
 
 实现要求：
 
+- **实现前必须先读取 [`iidp-frontend-extension-dev/SKILL.md`](../iidp-frontend-extension-dev/SKILL.md) §扩展开发协议章节**，获取完整扩展类型规则（selector、beforeOperate、命名唯一性、权重顺序、merge 的 items 行为、replace 使用限制等）。
 - 先确认目标节点 id 和插入/合并位置。
 - 新增节点配置稳定业务 id。
 - 新增组件节点前读取组件规则，不使用通用 Vue/Element 写法猜 IIDP 属性。
